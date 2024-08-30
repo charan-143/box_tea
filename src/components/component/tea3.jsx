@@ -11,13 +11,7 @@ import {
 	DropdownMenuContent,
 	DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import {
-	Card,
-	CardHeader,
-	CardTitle,
-	CardDescription,
-	CardContent,
-} from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
 	Table,
@@ -36,17 +30,10 @@ import {
 	DialogDescription,
 	DialogFooter,
 } from "@/components/ui/dialog";
-import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { Separator } from "@/components/ui/separator";
 import { DialogClose } from "@radix-ui/react-dialog";
-import { createClient } from "@supabase/supabase-js";
-
-// Supabase configuration (replace with your actual values)
-const supabaseUrl = "https://mamhjvhxwsedrqfxdwqx.supabase.co";
-const supabaseKey =
-	"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1hbWhqdmh4d3NlZHJxZnhkd3F4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjQ0MTQ4ODksImV4cCI6MjAzOTk5MDg4OX0.m5G-MFUL2hlq49mkzo3BIXVw4AdNvzkv97f04GaRiEo";
-
-const supabase = createClient(supabaseUrl, supabaseKey);
+import { supabase } from "@/lib/supabase";
+import Image from "next/image";
 
 async function fetchMenuItems() {
 	const { data, error } = await supabase.from("menuitems").select("*");
@@ -84,39 +71,53 @@ async function addMenuItem(name, description, price, image) {
 
 // Function to create a new Order in Supabase
 async function createOrder(purpose, venue, customer, cart) {
-	const items = cart.map((item) => ({
-		id: item.name,
-	}));
-	const quantities = cart.map((item) => ({
-		quantity: item.quantity,
-	}));
+	const items = cart.map((item) => ({ id: item.name }));
+	const quantities = cart.map((item) => ({ quantity: item.quantity }));
+
+	const getUserEmail = async () => {
+		const {
+			data: { user },
+			error,
+		} = await supabase.auth.getUser();
+		if (error) {
+			console.error("Error fetching user:", error);
+			return null;
+		}
+		return user?.email;
+	};
+
+	const user = await getUserEmail();
+	const now = new Date();
+	const date = now.toISOString().slice(0, 10);
+	const time = now.toTimeString().slice(0, 8);
+
 	const { data, error } = await supabase
 		.from("orders")
-		.insert({ purpose, venue, customer, status: "Pending", items, quantities })
-		.select();
+		.insert({
+			date,
+			time,
+			purpose,
+			venue,
+			customer,
+			status: "Pending",
+			items,
+			quantities,
+			user,
+		})
+		.select()
+		.single();
 
 	if (error) {
 		console.error("Error creating order:", error);
 		throw error;
 	}
 
-	if (!data || data.length === 0) {
+	if (!data) {
 		console.error("No data returned from order creation");
 		throw new Error("Failed to create order");
 	}
 
-	const orderId = data[0].id;
-
-	// Insert order items
-	const itemInsertPromises = items.map((item) =>
-		supabase
-			.from("orderItems")
-			.insert({ orderId, itemId: item.id, quantity: item.quantity })
-	);
-
-	await Promise.all(itemInsertPromises);
-
-	return orderId;
+	return data.id;
 }
 function Header({ setActiveTab, setIsProfileOpen }) {
 	const [signIn, setSignIn] = useState(false);
@@ -178,11 +179,13 @@ function Header({ setActiveTab, setIsProfileOpen }) {
 							</Button>
 						</DropdownMenuTrigger>
 						<DropdownMenuContent align="end">
-							<DropdownMenuItem>
-								<button onClick={() => setIsProfileOpen(true)}>
-									<span>Profile</span>
-								</button>
-							</DropdownMenuItem>
+							<Link href={"/profile"} prefetch={false}>
+								<DropdownMenuItem>
+									<button onClick={() => setIsProfileOpen(true)}>
+										<span>Profile</span>
+									</button>
+								</DropdownMenuItem>
+							</Link>
 							<DropdownMenuItem>
 								<Link
 									href="#"
@@ -190,14 +193,14 @@ function Header({ setActiveTab, setIsProfileOpen }) {
 									prefetch={false}
 								>
 									<LogInIcon className="h-4 w-4" />
-									<span onClick={() => setSignIn(true)}>Sign In</span>
+									<span onClick={() => setSignIn(true)}>Sign out</span>
 								</Link>
 							</DropdownMenuItem>
 						</DropdownMenuContent>
 					</DropdownMenu>
 				</div>
 			</div>
-			<Dialog open={signIn} onOpenChange={setSignIn}>
+			{/* <Dialog open={signIn} onOpenChange={setSignIn}>
 				<DialogContent>
 					<DialogHeader>
 						<DialogTitle>Sign In</DialogTitle>
@@ -215,7 +218,7 @@ function Header({ setActiveTab, setIsProfileOpen }) {
 					</div>
 					<Button className="w-full">Sign In</Button>
 				</DialogContent>
-			</Dialog>
+			</Dialog> */}
 		</header>
 	);
 }
@@ -282,7 +285,7 @@ function Main() {
 									className="bg-card text-card-foreground shadow-sm hover:shadow-md transition-shadow"
 								>
 									<div className="flex flex-col items-center gap-4 p-6">
-										<img
+										<Image
 											src={item.image}
 											alt={item.name}
 											width={150}

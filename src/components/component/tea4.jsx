@@ -43,14 +43,9 @@ import {
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { DialogClose } from "@radix-ui/react-dialog";
-import { createClient } from "@supabase/supabase-js";
-
-// Supabase configuration (replace with your actual values)
-const supabaseUrl = "https://mamhjvhxwsedrqfxdwqx.supabase.co";
-const supabaseKey =
-	"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1hbWhqdmh4d3NlZHJxZnhkd3F4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjQ0MTQ4ODksImV4cCI6MjAzOTk5MDg4OX0.m5G-MFUL2hlq49mkzo3BIXVw4AdNvzkv97f04GaRiEo";
-
-const supabase = createClient(supabaseUrl, supabaseKey);
+import { supabase } from "@/lib/supabase";
+import {  useRouter } from "next/navigation";
+import { Dashboard } from "@/components/dashboard";
 
 // Tables:
 // - MenuItems: Stores information about each menu item.
@@ -83,44 +78,33 @@ async function fetchOrders() {
 	}
 }
 
-// Function to add a new Menu Item to Supabase
-async function addMenuItem(name, description, price, image) {
-	const { data, error } = await supabase
-		.from("MenuItems")
-		.insert({ name, description, price, image });
+// // Function to add a new Menu Item to Supabase
+// async function addMenuItem(name, description, price, image) {
+// 	const { data, error } = await supabase
+// 		.from("MenuItems")
+// 		.insert({ name, description, price, image });
 
-	if (error) {
-		console.error("Error adding menu item:", error);
-	} else {
-		return data;
-	}
-}
+// 	if (error) {
+// 		console.error("Error adding menu item:", error);
+// 	} else {
+// 		return data;
+// 	}
+// }
 
-// Function to create a new Order in Supabase
-async function createOrder(purpose, venue, customer, items) {
-	const { data, error } = await supabase
-		.from("orders")
-		.insert({ purpose, venue, customer, status: "Pending" });
-
-	if (error) {
-		console.error("Error creating order:", error);
-	} else {
-		const orderId = data[0].id; // Get the ID of the newly created order
-
-		// Insert order items
-		await Promise.all(
-			items.map((item) =>
-				supabase
-					.from("orderItems")
-					.insert({ orderId, itemId: item.id, quantity: item.quantity })
-			)
-		);
-
-		return orderId;
-	}
-}
-function Header({ setActiveTab, setIsProfileOpen }) {
+function Header({ setActiveTab, setIsProfileOpen, onLogout }) {
 	const [signIn, setSignIn] = useState(false);
+	const router = useRouter();
+
+	const handleLogout = async () => {
+		const { error } = await supabase.auth.signOut();
+		if (error) {
+			console.error('Error logging out:', error);
+		} else {
+			// Call the onLogout callback instead of using router
+			onLogout();
+			router.push('/signin');
+		}
+	};
 
 	return (
 		<header className="sticky top-0 z-10 border-b bg-background px-4 py-3 shadow-sm sm:px-6">
@@ -185,14 +169,10 @@ function Header({ setActiveTab, setIsProfileOpen }) {
 								</button>
 							</DropdownMenuItem>
 							<DropdownMenuItem>
-								<Link
-									href="#"
-									className="flex items-center gap-2"
-									prefetch={false}
-								>
-									<LogInIcon className="h-4 w-4" />
-									<span onClick={() => setSignIn(true)}>Sign In</span>
-								</Link>
+								<button onClick={handleLogout} className="flex items-center gap-2">
+									<LogOutIcon className="h-4 w-4" />
+									<span>Sign out</span>
+								</button>
 							</DropdownMenuItem>
 						</DropdownMenuContent>
 					</DropdownMenu>
@@ -221,11 +201,11 @@ function Header({ setActiveTab, setIsProfileOpen }) {
 	);
 }
 
-function Main({ activeTab, setActiveTab }) {
+function Main() {
 	const [orderDate, setOrderDate] = useState(null);
-
 	const [menuItems, setMenuItems] = useState([]);
 	const [fetchedOrders, setFetchedOrders] = useState([]);
+	const [filteredOrders, setFilteredOrders] = useState([]);
 
 	useEffect(() => {
 		const fetchData = async () => {
@@ -239,22 +219,48 @@ function Main({ activeTab, setActiveTab }) {
 		fetchData();
 	}, []);
 
-	const filteredOrders = useMemo(() => {
-		if (orderDate) {
-			return fetchedOrders.filter(
-				(order) =>
-					new Date(order.date).getFullYear() === orderDate.getFullYear()
-			);
-		}
-		return fetchedOrders;
+	useEffect(() => {
+		const filterOrders = async () => {
+			const user = await user_email();
+			console.log(user);
+			const filtered = orderDate
+				? fetchedOrders.filter(
+						(order) =>
+							new Date(order.date).getFullYear() === orderDate.getFullYear() &&
+							order.user === user.email
+				  )
+				: fetchedOrders.filter(order => order.user === user.email);
+			setFilteredOrders(filtered);
+		};
+
+		filterOrders();
 	}, [fetchedOrders, orderDate]);
+	filteredOrders.map((order) => {
+		console.log(order);
+	});
+
+	const user_email = async () => {
+		try {
+			const { data: { user }, error: userError } = await supabase.auth.getUser();
+			
+			if (userError) {
+				console.error('Error fetching user:', userError);
+				return null;
+			}
+	
+			return user;
+		} catch (error) {
+			console.error('Unexpected error during logout:', error);
+			return null;
+		}
+	};
 
 	return (
 		<main className="flex-1">
 			<section className="py-12 sm:py-16 lg:py-5">
 				<div className="container mx-auto px-4 sm:px-6">
 					<div className="flex justify-center">
-						<Card className="w-full max-w-3xl">
+						<Card className="w-full max-w-4xl">
 							<CardHeader>
 								<CardTitle>Orders</CardTitle>
 								<CardDescription>
@@ -288,32 +294,33 @@ function Main({ activeTab, setActiveTab }) {
 									<TableHeader>
 										<TableRow>
 											<TableHead>Date</TableHead>
+											<TableHead>Time</TableHead>
+											<TableHead>Customer</TableHead>
 											<TableHead>Purpose</TableHead>
 											<TableHead>Venue</TableHead>
 											<TableHead>Items</TableHead>
 											<TableHead>Quantity</TableHead>
-											<TableHead>
-												<span className="sr-only">Accept</span>
-											</TableHead>
 										</TableRow>
 									</TableHeader>
 									<TableBody>
 										{filteredOrders.map((order) => (
 											<TableRow key={order.id}>
 												<TableCell>{order.date}</TableCell>
+												<TableCell>{order.time}</TableCell>
 												<TableCell>{order.customer}</TableCell>
-												<TableCell>VEnue</TableCell>
+												<TableCell>{order.purpose}</TableCell>
+												<TableCell>{order.venue}</TableCell>
 												<TableCell>
-													{/* Fetch order items based on order.id */}
-													{/* Display order items in the table */}
+													{order.items.map((item) => (
+														<div key={item.id}>{item.id}</div>
+													))}
 												</TableCell>
 												<TableCell>
-													{/* Display order item quantities in the table */}
-												</TableCell>
-												<TableCell>
-													<Button variant="ghost" size="icon">
-														<CheckCircleIcon className="h-4 w-4" />
-													</Button>
+													{order.quantities.map((quantity) => (
+														<div key={quantity.id} className="text-center">
+															{quantity.quantity}
+														</div>
+													))}
 												</TableCell>
 											</TableRow>
 										))}
@@ -490,12 +497,36 @@ function PlaceOrderDialog({ placeOrder, setPlaceOrder }) {
 export function Tea4() {
 	const [activeTab, setActiveTab] = useState("menu");
 	const [isProfileOpen, setIsProfileOpen] = useState(false);
+	const [showDashboard, setShowDashboard] = useState(false);
+
+	const handleLogout = () => {
+		// Handle logout logic here, such as clearing local storage, resetting state, etc.
+		console.log("User logged out");
+		// You can add additional logic here, like redirecting to a login page
+	};
 
 	return (
 		<div className="flex flex-col min-h-screen bg-background text-foreground">
-			<Header setActiveTab={setActiveTab} setIsProfileOpen={setIsProfileOpen} />
-			<Main />
+			<Header 
+				setActiveTab={setActiveTab} 
+				setIsProfileOpen={setIsProfileOpen} 
+				onLogout={handleLogout}
+			/>
+			{/* <div className="flex-1">
+				{showDashboard ? (
+					<Dashboard />
+				) : (
+					<Main />
+				)}
+			</div> */}
+			<Main/>
 			<Footer />
+			{/* <button
+				className="fixed bottom-4 right-4 bg-primary text-white p-2 rounded-full"
+				onClick={() => setShowDashboard(!showDashboard)}
+			>
+				{showDashboard ? "View Orders" : "View Dashboard"}
+			</button> */}
 		</div>
 	);
 }
@@ -694,6 +725,27 @@ function CheckCircleIcon(props) {
 		>
 			<path d="M22 11.08V12a10 10 0 1 1-5.93-13.91" />
 			<path d="M22 4L12 14.01l-3-3" />
+		</svg>
+	);
+}
+
+function LogOutIcon(props) {
+	return (
+		<svg
+			{...props}
+			xmlns="http://www.w3.org/2000/svg"
+			width="24"
+			height="24"
+			viewBox="0 0 24 24"
+			fill="none"
+			stroke="currentColor"
+			strokeWidth="2"
+			strokeLinecap="round"
+			strokeLinejoin="round"
+		>
+			<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+			<polyline points="16 17 21 12 16 7" />
+			<line x1="21" x2="9" y1="12" y2="12" />
 		</svg>
 	);
 }

@@ -1,5 +1,10 @@
 import { Tea4 } from "@/components/component/tea4";
+import AuthWrapper from "@/components/AuthWrapper";
 
 export default function Orders() {
-	return <Tea4 />;
+	return (
+		<AuthWrapper>
+			<Tea4 />
+		</AuthWrapper>
+	);
 }
