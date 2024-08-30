@@ -45,7 +45,6 @@ import { Separator } from "@/components/ui/separator";
 import { DialogClose } from "@radix-ui/react-dialog";
 import { supabase } from "@/lib/supabase";
 import {  useRouter } from "next/navigation";
-import { Dashboard } from "@/components/dashboard";
 
 // Tables:
 // - MenuItems: Stores information about each menu item.
