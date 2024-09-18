@@ -125,7 +125,8 @@ export function Header({ setActiveTab, setIsProfileOpen, onLogout }) {
 						</DropdownMenuTrigger>
 						<DropdownMenuContent align="end">
 							<DropdownMenuItem onClick={() => setIsProfileOpen(true)}>
-								Profile
+								<Link href={"/profile"}>
+								Profile</Link>
 							</DropdownMenuItem>
 							<DropdownMenuItem onClick={handleLogout}>
 								<LogOutIcon className="h-4 w-4 mr-2" />
@@ -135,25 +136,7 @@ export function Header({ setActiveTab, setIsProfileOpen, onLogout }) {
 					</DropdownMenu>
 				</div>
 			</div>
-			<Dialog open={signIn} onOpenChange={setSignIn}>
-				<DialogContent>
-					<DialogHeader>
-						<DialogTitle>Sign In</DialogTitle>
-						<DialogDescription>
-							Enter your email and password to access your account.
-						</DialogDescription>
-					</DialogHeader>
-					<div className="space-y-2">
-						<Label htmlFor="email">Email</Label>
-						<Input id="email" type="email" placeholder="name@example.com" />
-					</div>
-					<div className="space-y-2">
-						<Label htmlFor="password">Password</Label>
-						<Input id="password" type="password" />
-					</div>
-					<Button className="w-full">Sign In</Button>
-				</DialogContent>
-			</Dialog>
+			
 		</header>
 	);
 }
