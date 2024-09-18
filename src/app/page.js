@@ -1,9 +1,10 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { Mountain, CupSodaIcon } from "lucide-react";
+import { CupSodaIcon } from "lucide-react";
 import Link from "next/link";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
 export default function Component() {
 	const router = useRouter();
 	const user_email = async () => {

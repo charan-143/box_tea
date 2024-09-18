@@ -3,14 +3,8 @@ import { Label } from "@/components/ui/label";
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Sheet, SheetTrigger, SheetContent } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import {
-	DropdownMenu,
-	DropdownMenuTrigger,
-	DropdownMenuContent,
-	DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
+
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
@@ -33,8 +27,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { DialogClose } from "@radix-ui/react-dialog";
 import { supabase } from "@/lib/supabase";
-import Image from "next/image";
-
+import { Header } from "@/components/header";
 async function fetchMenuItems() {
 	const { data, error } = await supabase.from("menuitems").select("*");
 
@@ -57,17 +50,17 @@ async function fetchOrders() {
 }
 
 // Function to add a new Menu Item to Supabase
-async function addMenuItem(name, description, price, image) {
-	const { data, error } = await supabase
-		.from("MenuItems")
-		.insert({ name, description, price, image });
+// async function addMenuItem(name, description, price, image) {
+// 	const { data, error } = await supabase
+// 		.from("MenuItems")
+// 		.insert({ name, description, price, image });
 
-	if (error) {
-		console.error("Error adding menu item:", error);
-	} else {
-		return data;
-	}
-}
+// 	if (error) {
+// 		console.error("Error adding menu item:", error);
+// 	} else {
+// 		return data;
+// 	}
+// }
 
 // Function to create a new Order in Supabase
 async function createOrder(purpose, venue, customer, cart) {
@@ -87,9 +80,11 @@ async function createOrder(purpose, venue, customer, cart) {
 	};
 
 	const user = await getUserEmail();
-	const now = new Date();
-	const date = now.toISOString().slice(0, 10);
-	const time = now.toTimeString().slice(0, 8);
+	const today = new Date();
+	const date = today.toLocaleDateString().slice(0, 10);
+	// const date = today.toISOString().slice(0, 10);
+	const time = today.toTimeString().slice(0, 8);
+	console.log(date, time);
 
 	const { data, error } = await supabase
 		.from("orders")
@@ -119,109 +114,109 @@ async function createOrder(purpose, venue, customer, cart) {
 
 	return data.id;
 }
-function Header({ setActiveTab, setIsProfileOpen }) {
-	const [signIn, setSignIn] = useState(false);
+// function Header({ setActiveTab, setIsProfileOpen }) {
+// 	const [signIn, setSignIn] = useState(false);
 
-	return (
-		<header className="sticky top-0 z-10 border-b bg-background px-4 py-3 shadow-sm sm:px-6">
-			<div className="container mx-auto flex items-center justify-between">
-				<Link href="#" className="flex items-center gap-2" prefetch={false}>
-					<CupSodaIcon className="h-6 w-6" />
-					<span className="text-lg font-medium">Box Tea</span>
-				</Link>
-				<div className="flex items-center gap-4 sm:hidden">
-					<Sheet>
-						<SheetTrigger asChild>
-							<Button variant="ghost" size="icon">
-								<MenuIcon className="h-5 w-5" />
-								<span className="sr-only">Toggle menu</span>
-							</Button>
-						</SheetTrigger>
-						<SheetContent side="left" className="sm:max-w-xs">
-							<nav className="grid gap-4 text-lg font-medium">
-								<Link
-									href="/menu"
-									className={`${setActiveTab === "menu" ? "text-primary" : ""}`}
-								>
-									Menu
-								</Link>
-								<Link
-									href="/orders"
-									className={`${
-										setActiveTab === "orders" ? "text-primary" : ""
-									}`}
-								>
-									Orders
-								</Link>
-							</nav>
-						</SheetContent>
-					</Sheet>
-				</div>
-				<div className="hidden sm:flex items-center gap-4">
-					<Link
-						href="/menu"
-						className={`${setActiveTab === "menu" ? "text-primary" : ""}`}
-					>
-						Menu
-					</Link>
-					<Link
-						href="/orders"
-						className={`${setActiveTab === "orders" ? "text-primary" : ""}`}
-					>
-						Orders
-					</Link>
+// 	return (
+// 		<header className="sticky top-0 z-10 border-b bg-background px-4 py-3 shadow-sm sm:px-6">
+// 			<div className="container mx-auto flex items-center justify-between">
+// 				<Link href="#" className="flex items-center gap-2" prefetch={false}>
+// 					<CupSodaIcon className="h-6 w-6" />
+// 					<span className="text-lg font-medium">Box Tea</span>
+// 				</Link>
+// 				<div className="flex items-center gap-4 sm:hidden">
+// 					<Sheet>
+// 						<SheetTrigger asChild>
+// 							<Button variant="ghost" size="icon">
+// 								<MenuIcon className="h-5 w-5" />
+// 								<span className="sr-only">Toggle menu</span>
+// 							</Button>
+// 						</SheetTrigger>
+// 						<SheetContent side="left" className="sm:max-w-xs">
+// 							<nav className="grid gap-4 text-lg font-medium">
+// 								<Link
+// 									href="/menu"
+// 									className={`${setActiveTab === "menu" ? "text-primary" : ""}`}
+// 								>
+// 									Menu
+// 								</Link>
+// 								<Link
+// 									href="/orders"
+// 									className={`${
+// 										setActiveTab === "orders" ? "text-primary" : ""
+// 									}`}
+// 								>
+// 									Orders
+// 								</Link>
+// 							</nav>
+// 						</SheetContent>
+// 					</Sheet>
+// 				</div>
+// 				<div className="hidden sm:flex items-center gap-4">
+// 					<Link
+// 						href="/menu"
+// 						className={`${setActiveTab === "menu" ? "text-primary" : ""}`}
+// 					>
+// 						Menu
+// 					</Link>
+// 					<Link
+// 						href="/orders"
+// 						className={`${setActiveTab === "orders" ? "text-primary" : ""}`}
+// 					>
+// 						Orders
+// 					</Link>
 
-					<DropdownMenu>
-						<DropdownMenuTrigger asChild>
-							<Button variant="ghost" size="icon">
-								<UserIcon className="h-5 w-5" />
-								<span className="sr-only">Account</span>
-							</Button>
-						</DropdownMenuTrigger>
-						<DropdownMenuContent align="end">
-							<Link href={"/profile"} prefetch={false}>
-								<DropdownMenuItem>
-									<button onClick={() => setIsProfileOpen(true)}>
-										<span>Profile</span>
-									</button>
-								</DropdownMenuItem>
-							</Link>
-							<DropdownMenuItem>
-								<Link
-									href="#"
-									className="flex items-center gap-2"
-									prefetch={false}
-								>
-									<LogInIcon className="h-4 w-4" />
-									<span onClick={() => setSignIn(true)}>Sign out</span>
-								</Link>
-							</DropdownMenuItem>
-						</DropdownMenuContent>
-					</DropdownMenu>
-				</div>
-			</div>
-			{/* <Dialog open={signIn} onOpenChange={setSignIn}>
-				<DialogContent>
-					<DialogHeader>
-						<DialogTitle>Sign In</DialogTitle>
-						<DialogDescription>
-							Enter your email and password to access your account.
-						</DialogDescription>
-					</DialogHeader>
-					<div className="space-y-2">
-						<Label htmlFor="email">Email</Label>
-						<Input id="email" type="email" placeholder="name@example.com" />
-					</div>
-					<div className="space-y-2">
-						<Label htmlFor="password">Password</Label>
-						<Input id="password" type="password" />
-					</div>
-					<Button className="w-full">Sign In</Button>
-				</DialogContent>
-			</Dialog> */}
-		</header>
-	);
-}
+// 					<DropdownMenu>
+// 						<DropdownMenuTrigger asChild>
+// 							<Button variant="ghost" size="icon">
+// 								<UserIcon className="h-5 w-5" />
+// 								<span className="sr-only">Account</span>
+// 							</Button>
+// 						</DropdownMenuTrigger>
+// 						<DropdownMenuContent align="end">
+// 							<Link href={"/profile"} prefetch={false}>
+// 								<DropdownMenuItem>
+// 									<button onClick={() => setIsProfileOpen(true)}>
+// 										<span>Profile</span>
+// 									</button>
+// 								</DropdownMenuItem>
+// 							</Link>
+// 							<DropdownMenuItem>
+// 								<Link
+// 									href="#"
+// 									className="flex items-center gap-2"
+// 									prefetch={false}
+// 								>
+// 									<LogInIcon className="h-4 w-4" />
+// 									<span onClick={() => setSignIn(true)}>Sign out</span>
+// 								</Link>
+// 							</DropdownMenuItem>
+// 						</DropdownMenuContent>
+// 					</DropdownMenu>
+// 				</div>
+// 			</div>
+// 			{/* <Dialog open={signIn} onOpenChange={setSignIn}>
+// 				<DialogContent>
+// 					<DialogHeader>
+// 						<DialogTitle>Sign In</DialogTitle>
+// 						<DialogDescription>
+// 							Enter your email and password to access your account.
+// 						</DialogDescription>
+// 					</DialogHeader>
+// 					<div className="space-y-2">
+// 						<Label htmlFor="email">Email</Label>
+// 						<Input id="email" type="email" placeholder="name@example.com" />
+// 					</div>
+// 					<div className="space-y-2">
+// 						<Label htmlFor="password">Password</Label>
+// 						<Input id="password" type="password" />
+// 					</div>
+// 					<Button className="w-full">Sign In</Button>
+// 				</DialogContent>
+// 			</Dialog> */}
+// 		</header>
+// 	);
+// }
 
 function Main() {
 	const [cart, setCart] = useState([]);
@@ -285,7 +280,7 @@ function Main() {
 									className="bg-card text-card-foreground shadow-sm hover:shadow-md transition-shadow"
 								>
 									<div className="flex flex-col items-center gap-4 p-6">
-										<Image
+										<img
 											src={item.image}
 											alt={item.name}
 											width={150}
@@ -521,97 +516,21 @@ function PlaceOrderDialog({ placeOrder, setPlaceOrder }) {
 export function Tea3() {
 	const [activeTab, setActiveTab] = useState("menu");
 	const [isProfileOpen, setIsProfileOpen] = useState(false);
-
+	const handleLogout = () => {
+		// Handle logout logic here, such as clearing local storage, resetting state, etc.
+		console.log("User logged out");
+		// You can add additional logic here, like redirecting to a login page
+	};
 	return (
 		<div className="flex flex-col min-h-screen bg-background text-foreground">
-			<Header setActiveTab={setActiveTab} setIsProfileOpen={setIsProfileOpen} />
+			<Header
+				setActiveTab={setActiveTab}
+				setIsProfileOpen={setIsProfileOpen}
+				onLogout={handleLogout}
+			/>
 			<Main />
 			<Footer />
 		</div>
-	);
-}
-
-function CupSodaIcon(props) {
-	return (
-		<svg
-			{...props}
-			xmlns="http://www.w3.org/2000/svg"
-			width="24"
-			height="24"
-			viewBox="0 0 24 24"
-			fill="none"
-			stroke="currentColor"
-			strokeWidth="2"
-			strokeLinecap="round"
-			strokeLinejoin="round"
-		>
-			<path d="m6 8 1.75 12.28a2 2 0 0 0 2 1.72h4.54a2 2 0 0 0 2-1.72L18 8" />
-			<path d="M5 8h14" />
-			<path d="M7 15a6.47 6.47 0 0 1 5 0 6.47 6.47 0 0 0 5 0" />
-			<path d="m12 8 1-6h2" />
-		</svg>
-	);
-}
-
-function LogInIcon(props) {
-	return (
-		<svg
-			{...props}
-			xmlns="http://www.w3.org/2000/svg"
-			width="24"
-			height="24"
-			viewBox="0 0 24 24"
-			fill="none"
-			stroke="currentColor"
-			strokeWidth="2"
-			strokeLinecap="round"
-			strokeLinejoin="round"
-		>
-			<path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
-			<polyline points="10 17 15 12 10 7" />
-			<line x1="15" x2="3" y1="12" y2="12" />
-		</svg>
-	);
-}
-
-function MenuIcon(props) {
-	return (
-		<svg
-			{...props}
-			xmlns="http://www.w3.org/2000/svg"
-			width="24"
-			height="24"
-			viewBox="0 0 24 24"
-			fill="none"
-			stroke="currentColor"
-			strokeWidth="2"
-			strokeLinecap="round"
-			strokeLinejoin="round"
-		>
-			<line x1="4" x2="20" y1="12" y2="12" />
-			<line x1="4" x2="20" y1="6" y2="6" />
-			<line x1="4" x2="20" y1="18" y2="18" />
-		</svg>
-	);
-}
-
-function UserIcon(props) {
-	return (
-		<svg
-			{...props}
-			xmlns="http://www.w3.org/2000/svg"
-			width="24"
-			height="24"
-			viewBox="0 0 24 24"
-			fill="none"
-			stroke="currentColor"
-			strokeWidth="2"
-			strokeLinecap="round"
-			strokeLinejoin="round"
-		>
-			<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-			<circle cx="12" cy="7" r="4" />
-		</svg>
 	);
 }
 

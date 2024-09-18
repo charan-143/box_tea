@@ -38,3 +38,6 @@ next-env.d.ts
 .vercel
 
 .vercel
+
+/src/app/test 
+.deepsource.toml

@@ -1,0 +1,159 @@
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useState, useEffect } from "react";
+
+import {
+	DropdownMenu,
+	DropdownMenuTrigger,
+	DropdownMenuContent,
+	DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
+import {
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+	DialogDescription,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Sheet, SheetTrigger, SheetContent } from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+
+import { supabase } from "@/lib/supabase";
+import { CupSodaIcon, MenuIcon, UserIcon, LogOutIcon } from "lucide-react";
+
+export function Header({ setActiveTab, setIsProfileOpen, onLogout }) {
+	const [signIn, setSignIn] = useState(false);
+	const [userRole, setUserRole] = useState(null);
+	const router = useRouter();
+
+	useEffect(() => {
+		fetchUserRole();
+	}, []);
+
+	const fetchUserRole = async () => {
+		const { data: { user } } = await supabase.auth.getUser();
+		if (user) {
+			const { data, error } = await supabase
+				.from('users_data')
+				.select('user_type')
+				.eq('users_email', user.email)
+				.single();
+
+			if (data) {
+				setUserRole(data.user_type);
+			}
+		}
+	};
+
+	const handleLogout = async () => {
+		const { error } = await supabase.auth.signOut();
+		if (error) {
+		  console.error("Error logging out:", error);
+		} else {
+		  router.push("/signin");
+		}
+	  };
+
+	const navLinks = userRole === 'admin' 
+		? [
+			{ href: "/admin-dashboard", label: "Admin Dashboard" },
+			{ href: "/menu", label: "Menu" },
+			{ href: "/orders", label: "Orders" },
+		]
+		: [
+			{ href: "/worker-dashboard", label: "Dashboard" },
+			{ href: "/menu", label: "Menu" },
+			{ href: "/orders", label: "Orders" },
+		];
+
+	return (
+		<header className="sticky top-0 z-10 border-b bg-background px-4 py-3 shadow-sm sm:px-6">
+			<div className="container mx-auto flex items-center justify-between">
+				<Link href="#" className="flex items-center gap-2" prefetch={false}>
+					<CupSodaIcon className="h-6 w-6" />
+					<span className="text-lg font-medium">Box Tea</span>
+				</Link>
+				<div className="flex items-center gap-4 sm:hidden">
+					<Sheet>
+						<SheetTrigger asChild>
+							<Button variant="ghost" size="icon">
+								<MenuIcon className="h-5 w-5" />
+								<span className="sr-only">Toggle menu</span>
+							</Button>
+						</SheetTrigger>
+						<SheetContent
+							side="left"
+							className="sm:max-w-xs"
+							style={{ transition: "transform 150ms ease-out" }}
+						>
+							<nav className="grid gap-4 text-lg font-medium">
+								{navLinks.map(({ href, label }) => (
+									<Link
+										key={href}
+										href={href}
+										className={
+											setActiveTab === label.toLowerCase() ? "text-primary" : ""
+										}
+									>
+										{label}
+									</Link>
+								))}
+							</nav>
+						</SheetContent>
+					</Sheet>
+				</div>
+				<div className="hidden sm:flex items-center gap-4">
+					{navLinks.map(({ href, label }) => (
+						<Link
+							key={href}
+							href={href}
+							className={
+								setActiveTab === label.toLowerCase() ? "text-primary" : ""
+							}
+						>
+							{label}
+						</Link>
+					))}
+					<DropdownMenu>
+						<DropdownMenuTrigger asChild>
+							<Button variant="ghost" size="icon">
+								<UserIcon className="h-5 w-5" />
+								<span className="sr-only">Account</span>
+							</Button>
+						</DropdownMenuTrigger>
+						<DropdownMenuContent align="end">
+							<DropdownMenuItem onClick={() => setIsProfileOpen(true)}>
+								Profile
+							</DropdownMenuItem>
+							<DropdownMenuItem onClick={handleLogout}>
+								<LogOutIcon className="h-4 w-4 mr-2" />
+								Sign out
+							</DropdownMenuItem>
+						</DropdownMenuContent>
+					</DropdownMenu>
+				</div>
+			</div>
+			<Dialog open={signIn} onOpenChange={setSignIn}>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>Sign In</DialogTitle>
+						<DialogDescription>
+							Enter your email and password to access your account.
+						</DialogDescription>
+					</DialogHeader>
+					<div className="space-y-2">
+						<Label htmlFor="email">Email</Label>
+						<Input id="email" type="email" placeholder="name@example.com" />
+					</div>
+					<div className="space-y-2">
+						<Label htmlFor="password">Password</Label>
+						<Input id="password" type="password" />
+					</div>
+					<Button className="w-full">Sign In</Button>
+				</DialogContent>
+			</Dialog>
+		</header>
+	);
+}
