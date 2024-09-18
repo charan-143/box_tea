@@ -257,7 +257,7 @@ function Footer() {
 	);
 }
 
-export function Tea4() {
+export function Order_menu() {
 	const [activeTab, setActiveTab] = useState("menu");
 	const [isProfileOpen, setIsProfileOpen] = useState(false);
 
