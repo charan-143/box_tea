@@ -1,11 +1,11 @@
-import { Menu } from "@/components/component/menu";
+import { Tea3 } from "@/components/component/tea3";
 import AuthWrapper from "@/components/AuthWrapper";
 
 export default function Menu() {
 	
 	return (
 		<AuthWrapper>
-			<Menu />
+			<Tea3 />
 		</AuthWrapper>
 	);
 }

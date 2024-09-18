@@ -513,7 +513,7 @@ function PlaceOrderDialog({ placeOrder, setPlaceOrder }) {
 	);
 }
 
-export function Menu() {
+export function Tea3() {
 	const [activeTab, setActiveTab] = useState("menu");
 	const [isProfileOpen, setIsProfileOpen] = useState(false);
 	const handleLogout = () => {
