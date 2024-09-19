@@ -355,6 +355,7 @@ export function Dashboard() {
 		calculateOrdersThisMonth,
 		calculateData,
 		topItem,
+		mostFrequentCustomer
 	]);
 
 	// console.log(chartData.topItems.labels);
