@@ -10,7 +10,7 @@ import {
 	CardFooter,
 } from "@/components/ui/card";
 import { Header } from "@/components/header";
-// import { Pie } from "react-chartjs-2";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
 	Chart as ChartJS,
 	CategoryScale,
@@ -114,6 +114,7 @@ export function Dashboard() {
 	const [ordersThisMonth, setOrdersThisMonth] = useState(0);
 	const [topSellingItem, setTopSellingItem] = useState("N/A");
 	const [frequentCustomer, setFrequentCustomer] = useState("N/A");
+	const [activeTab, setActiveTab] = useState("pending");
 
 	const fetchOrders = useCallback(async () => {
 		const { data, error } = await supabase.from("orders").select("*");
@@ -357,12 +358,103 @@ export function Dashboard() {
 		topItem,
 		mostFrequentCustomer
 	]);
+	const OrderTable = ({ ordersData }) => {
+		return (
+			<div className="overflow-x-auto">
+				<Table>
+					<TableHeader>
+						<TableRow>
+							<TableHead>Date</TableHead>
+							<TableHead>Time</TableHead>
+							<TableHead>Purpose</TableHead>
+							<TableHead>Venue</TableHead>
+							<TableHead>Items</TableHead>
+							<TableHead>Quantity</TableHead>
+							<TableHead>Given Time</TableHead>
+							{activeTab === "pending" && (
+								<>
+									<TableHead>Given Time</TableHead>
+									<TableHead>Action</TableHead>
+								</>
+							)}
+						</TableRow>
+					</TableHeader>
+					<TableBody>
+						{ordersData
+							.slice(
+								(currentPage - 1) * ordersPerPage,
+								currentPage * ordersPerPage
+							)
+							.map((order) => (
+								<TableRow key={order.id}>
+									<TableCell className="md:table-cell block">
+										<span className="md:hidden font-bold mr-2">Date:</span>
+										{new Date(order.date).toLocaleDateString()}
+									</TableCell>
+									<TableCell className="md:table-cell block">
+										<span className="md:hidden font-bold mr-2">Time:</span>
+										{order.time}
+									</TableCell>
+									<TableCell>{order.purpose}</TableCell>
+									<TableCell>{order.venue}</TableCell>
+									<TableCell>
+										{order.items.map((item) => (
+											<div key={item.id}>{item.id}</div>
+										))}
+									</TableCell>
+									<TableCell>
+										{order.quantities.map((quantity) => (
+											<div key={quantity.id} className="text-center">
+												{quantity.quantity}
+											</div>
+										))}
+									</TableCell>
+									<TableCell>{order.given_time}</TableCell>
 
-	// console.log(chartData.topItems.labels);
-	// console.log(chartData.topItems.datasets[0].data.length);
-	// chartData.salesByPurpose.datasets[0].data.map((value, index) => {
-	// 	console.log(index, value);
-	// });
+									{activeTab === "pending" && (
+										<>
+											<TableCell className="md:table-cell block">
+												<span className="md:hidden font-bold mr-2">
+													Given Time:
+												</span>
+												{order.given_time || "-"}
+											</TableCell>
+											<TableCell className="md:table-cell block">
+												<span className="md:hidden font-bold mr-2">
+													Action:
+												</span>
+												<input
+													type="checkbox"
+													onChange={() => handleCheckboxChange(order.id)}
+													checked={!!order.given_time}
+													disabled={!!order.given_time}
+												/>
+											</TableCell>
+										</>
+									)}
+								</TableRow>
+							))}
+					</TableBody>
+				</Table>
+			</div>
+		);
+	};
+	const pendingOrders = useMemo(() => {
+		return sortedOrders.filter((order) => !order.given_time);
+	}, [sortedOrders]);
+
+	const deliveredOrders = useMemo(() => {
+		return sortedOrders.filter((order) => order.given_time);
+	}, [sortedOrders]);
+	const pendingOrdersCount = useMemo(
+		() => pendingOrders.length,
+		[pendingOrders]
+	);
+	const deliveredOrdersCount = useMemo(
+		() => deliveredOrders.length,
+		[deliveredOrders]
+	);
+	
 
 	return (
 		<><Header />
@@ -400,14 +492,7 @@ export function Dashboard() {
 			</Card>
 
 			<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-				{/* <Card>
-        <CardHeader>
-            <CardTitle>Last 2 Months Sales</CardTitle>
-        </CardHeader>
-        <CardContent>
-            <Bar data={chartData.monthlySales} options={chartOptions} />
-        </CardContent>
-    </Card> */}
+				
 				<Card>
 					<CardHeader>
 						<CardTitle>Last 2 Months Sales</CardTitle>
@@ -450,14 +535,7 @@ export function Dashboard() {
 						</ChartContainer>
 					</CardContent>
 				</Card>
-				{/* <Card>
-        <CardHeader>
-            <CardTitle>Top Selling Items</CardTitle>
-        </CardHeader>
-        <CardContent>
-            <Bar data={chartData.topItems} options={chartOptions} />
-        </CardContent>
-    </Card> */}
+		
 				<Card>
 					<CardHeader>
 						<CardTitle>Top Selling Item</CardTitle>
@@ -499,14 +577,7 @@ export function Dashboard() {
 						</ChartContainer>
 					</CardContent>
 				</Card>
-				{/* <Card>
-        <CardHeader>
-            <CardTitle>Sales by Purpose</CardTitle>
-        </CardHeader>
-        <CardContent>
-            <Pie data={chartData.salesByPurpose} options={chartOptions} />
-        </CardContent>
-    </Card> */}
+			
 				<Card className="flex flex-col">
 					<CardHeader className="items-center pb-0">
 						<CardTitle>Sales by Purpose</CardTitle>
@@ -587,14 +658,7 @@ export function Dashboard() {
 						</ChartContainer>
 					</CardContent>
 				</Card>
-				{/* <Card>
-        <CardHeader>
-            <CardTitle>Sales by Venue</CardTitle>
-        </CardHeader>
-        <CardContent>
-            <Bar data={chartData.salesByVenue} options={chartOptions} />
-        </CardContent>
-    </Card> */}
+			
 				<Card>
 					<CardHeader>
 						<CardTitle>Sales by Venue</CardTitle>
@@ -633,7 +697,7 @@ export function Dashboard() {
 						</ChartContainer>
 					</CardContent>
 				</Card>
-				<Card className="col-span-2">
+				{/* <Card className="col-span-2">
 					<CardHeader>
 						<CardTitle>Total Orders</CardTitle>
 						<div className="flex justify-between items-center mb-4">
@@ -779,7 +843,173 @@ export function Dashboard() {
 							)}
 						</div>
 					</CardContent>
-				</Card>
+				</Card> */}
+				<Card  className="col-span-2">
+						<CardHeader>
+							<CardTitle>Order Summary</CardTitle>
+							<div className="flex flex-col space-y-4 md:flex-row md:justify-between md:items-center mb-4">
+								<div className="flex flex-col space-y-2">
+									<p className="text-4xl font-bold">{filteredOrders.length}</p>
+									<p className="text-2xl font-bold">Total Orders</p>
+								</div>
+								<div className="flex flex-col space-y-2">
+									<p className="text-4xl font-bold">{pendingOrdersCount}</p>
+									<p className="text-2xl font-bold">Pending Orders</p>
+								</div>
+								<div className="flex flex-col space-y-2">
+									<p className="text-4xl font-bold">{deliveredOrdersCount}</p>
+									<p className="text-2xl font-bold">Delivered Orders</p>
+								</div>
+							</div>
+							<div className="flex flex-col space-y-4 md:flex-row md:justify-end md:items-center mb-4">
+								<div className="flex flex-col space-y-2 md:flex-row md:space-y-0 md:space-x-2">
+									<Button
+										onClick={() =>
+											setSortOrder(sortOrder === "asc" ? "desc" : "asc")
+										}
+										className="w-full md:w-auto"
+									>
+										Sort by Date {sortOrder === "asc" ? "↓" : "↑"}
+									</Button>
+									<Input
+										type="text"
+										placeholder="Search orders..."
+										value={searchTerm}
+										onChange={handleSearch}
+										className="w-full md:w-auto"
+									/>
+									<DropdownMenu>
+										<DropdownMenuTrigger asChild>
+											<Button variant="outline" className="w-full md:w-auto">
+												{timeRange === "today"
+													? "Today"
+													: timeRange === "this-month"
+													? "This Month"
+													: timeRange === "custom"
+													? "Custom Date"
+													: "All Orders"}
+												<ChevronDownIcon className="ml-2 h-4 w-4" />
+											</Button>
+										</DropdownMenuTrigger>
+										<DropdownMenuContent>
+											<DropdownMenuItem
+												onClick={() => handleTimeRangeChange("today")}
+											>
+												Today
+											</DropdownMenuItem>
+											<DropdownMenuItem
+												onClick={() => handleTimeRangeChange("this-month")}
+											>
+												This Month
+											</DropdownMenuItem>
+											<DropdownMenuItem
+												onClick={() => handleTimeRangeChange("all")}
+											>
+												All Orders
+											</DropdownMenuItem>
+											<DropdownMenuItem
+												onClick={() => handleTimeRangeChange("custom")}
+											>
+												Custom Date
+											</DropdownMenuItem>
+										</DropdownMenuContent>
+									</DropdownMenu>
+								</div>
+							</div>
+							{timeRange === "custom" && (
+								<div className="flex flex-col space-y-2 md:flex-row md:space-y-0 md:space-x-2 mb-4">
+									{["start", "end"].map((type) => (
+										<Popover key={type}>
+											<PopoverTrigger asChild>
+												<Button variant="outline">
+													<CalendarIcon className="mr-2 h-4 w-4" />
+													{type === "start" ? (
+														startDate ? (
+															format(startDate, "PPP")
+														) : (
+															<span>Start Date</span>
+														)
+													) : endDate ? (
+														format(endDate, "PPP")
+													) : (
+														<span>End Date</span>
+													)}
+												</Button>
+											</PopoverTrigger>
+											<PopoverContent className="w-auto p-0">
+												<Calendar
+													mode="single"
+													selected={type === "start" ? startDate : endDate}
+													onSelect={(date) => handleDateChange(type, date)}
+													initialFocus
+												/>
+											</PopoverContent>
+										</Popover>
+									))}
+								</div>
+							)}
+						</CardHeader>
+						<CardContent>
+							<Tabs value={activeTab} onValueChange={setActiveTab}>
+								<TabsList className="w-full">
+									<TabsTrigger value="pending" className="flex-1">
+										Pending Orders
+									</TabsTrigger>
+									<TabsTrigger value="delivered" className="flex-1">
+										Delivered Orders
+									</TabsTrigger>
+								</TabsList>
+								<TabsContent value="pending">
+									<OrderTable ordersData={pendingOrders} />
+									<div className="mt-4 flex justify-center">
+										{Array.from(
+											{
+												length: Math.ceil(pendingOrders.length / ordersPerPage),
+											},
+											(_, i) => (
+												<Button
+													key={i}
+													onClick={() => setCurrentPage(i + 1)}
+													className={`mx-1 border-2 border-black text-black font-bold ${
+														currentPage === i + 1
+															? "bg-gray-500"
+															: "bg-gray-300"
+													}`}
+												>
+													{i + 1}
+												</Button>
+											)
+										)}
+									</div>
+								</TabsContent>
+								<TabsContent value="delivered">
+									<OrderTable ordersData={deliveredOrders} />
+									<div className="mt-4 flex justify-center">
+										{Array.from(
+											{
+												length: Math.ceil(
+													deliveredOrders.length / ordersPerPage
+												),
+											},
+											(_, i) => (
+												<Button
+													key={i}
+													onClick={() => setCurrentPage(i + 1)}
+													className={`mx-1 border-2 border-black text-black font-bold ${
+														currentPage === i + 1
+															? "bg-gray-500"
+															: "bg-gray-300"
+													}`}
+												>
+													{i + 1}
+												</Button>
+											)
+										)}
+									</div>
+								</TabsContent>
+							</Tabs>
+						</CardContent>
+					</Card>
 			</div>
 		</div></>
 	);
