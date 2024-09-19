@@ -56,7 +56,7 @@ export function Header({ setActiveTab, setIsProfileOpen, onLogout }) {
 		: userRole === 'worker' 
 		? [
 			{ href: "/worker-dashboard", label: "Worker Dashboard" },
-			
+			,
 		]
 		: [{ href: "/menu", label: "Menu" },
 			{ href: "/orders", label: "Orders" },];
@@ -94,6 +94,14 @@ export function Header({ setActiveTab, setIsProfileOpen, onLogout }) {
 									</Link>
 								))}
 							</nav>
+							<Button
+    variant="ghost"
+    className="w-full justify-start"
+    onClick={handleLogout}
+  >
+    <LogOutIcon className="mr-2 h-4 w-4" />
+    SignOut
+  </Button>
 						</SheetContent>
 					</Sheet>
 				</div>
