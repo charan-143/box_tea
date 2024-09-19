@@ -152,6 +152,8 @@ export function WorkerDashboard() {
 	// Extract table rendering into a component
 	const OrderTable = ({ ordersData }) => {
 		return (
+			<div className="overflow-x-auto">
+
 			<Table>
 				<TableHeader>
 					<TableRow>
@@ -178,10 +180,14 @@ export function WorkerDashboard() {
 						)
 						.map((order) => (
 							<TableRow key={order.id}>
-								<TableCell>
-									{new Date(order.date).toLocaleDateString()}
-								</TableCell>
-								<TableCell>{order.time}</TableCell>
+								<TableCell className="md:table-cell block">
+                    <span className="md:hidden font-bold mr-2">Date:</span>
+                    {new Date(order.date).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell className="md:table-cell block">
+                    <span className="md:hidden font-bold mr-2">Time:</span>
+                    {order.time}
+                  </TableCell>
 								<TableCell>{order.purpose}</TableCell>
 								<TableCell>{order.venue}</TableCell>
 								<TableCell>
@@ -200,49 +206,56 @@ export function WorkerDashboard() {
 
 								{activeTab === "pending" && (
 									<>
-										<TableCell>{order.given_time || "-"}</TableCell>
-										<TableCell>
-											<input
-												type="checkbox"
-												onChange={() => handleCheckboxChange(order.id)}
-												checked={!!order.given_time}
-												disabled={!!order.given_time}
-											/>
-										</TableCell>
-									</>
+									<TableCell className="md:table-cell block">
+									  <span className="md:hidden font-bold mr-2">Given Time:</span>
+									  {order.given_time || "-"}
+									</TableCell>
+									<TableCell className="md:table-cell block">
+									  <span className="md:hidden font-bold mr-2">Action:</span>
+									  <input
+										type="checkbox"
+										onChange={() => handleCheckboxChange(order.id)}
+										checked={!!order.given_time}
+										disabled={!!order.given_time}
+									  />
+									</TableCell>
+								  </>
 								)}
 							</TableRow>
 						))}
 				</TableBody>
 			</Table>
+			</div>
 		);
 	};
 
 	return (
 		<><Header />
-			<div className="container mx-auto p-4">
-				<h1 className="text-2xl font-bold mb-4">Dashboard</h1>
-				<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-					<Card className="col-span-2">
-						<CardHeader>
-							<CardTitle>Total Orders</CardTitle>
-							<div className="flex justify-between items-center mb-4">
-								<p className="text-4xl font-bold">{filteredOrders.length}</p>
-								<div className="flex items-center space-x-2">
-									<Button
-										onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
-									>
-										Sort by Date {sortOrder === "asc" ? "↓" : "↑"}
-
-									</Button>
-									<Input
-										type="text"
-										placeholder="Search orders..."
-										value={searchTerm}
-										onChange={handleSearch} />
+		<div className="container mx-auto p-4">
+		  <h1 className="text-2xl font-bold mb-4">Dashboard</h1>
+		  <div className="grid grid-cols-1 gap-4">
+			<Card>
+			  <CardHeader>
+				<CardTitle>Total Orders</CardTitle>
+				<div className="flex flex-col space-y-4 md:flex-row md:justify-between md:items-center mb-4">
+				  <p className="text-4xl font-bold">{filteredOrders.length}</p>
+				  <div className="flex flex-col space-y-2 md:flex-row md:space-y-0 md:space-x-2">
+					<Button
+					  onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
+					  className="w-full md:w-auto"
+					>
+					  Sort by Date {sortOrder === "asc" ? "↓" : "↑"}
+					</Button>
+					<Input
+					  type="text"
+					  placeholder="Search orders..."
+					  value={searchTerm}
+					  onChange={handleSearch}
+					  className="w-full md:w-auto"
+					/>
 									<DropdownMenu>
-										<DropdownMenuTrigger asChild>
-											<Button variant="outline">
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" className="w-full md:w-auto">
 												{timeRange === "today"
 													? "Today"
 													: timeRange === "this-month"
@@ -279,7 +292,7 @@ export function WorkerDashboard() {
 								</div>
 							</div>
 							{timeRange === "custom" && (
-								<div className="flex justify-end space-x-2 mb-4">
+                <div className="flex flex-col space-y-2 md:flex-row md:space-y-0 md:space-x-2 mb-4">
 									{["start", "end"].map((type) => (
 										<Popover key={type}>
 											<PopoverTrigger asChild>
@@ -311,11 +324,11 @@ export function WorkerDashboard() {
 							)}
 						</CardHeader>
 						<CardContent>
-							<Tabs value={activeTab} onValueChange={setActiveTab}>
-								<TabsList>
-									<TabsTrigger value="pending">Pending Orders</TabsTrigger>
-									<TabsTrigger value="delivered">Delivered Orders</TabsTrigger>
-								</TabsList>
+              <Tabs value={activeTab} onValueChange={setActiveTab}>
+                <TabsList className="w-full">
+                  <TabsTrigger value="pending" className="flex-1">Pending Orders</TabsTrigger>
+                  <TabsTrigger value="delivered" className="flex-1">Delivered Orders</TabsTrigger>
+                </TabsList>
 								<TabsContent value="pending">
 									<OrderTable ordersData={pendingOrders} />
 									<div className="mt-4 flex justify-center">
