@@ -56,7 +56,7 @@ export function Header({ setActiveTab, setIsProfileOpen, onLogout }) {
 		: userRole === 'worker' 
 		? [
 			{ href: "/worker-dashboard", label: "Worker Dashboard" },
-			,
+			
 		]
 		: [{ href: "/menu", label: "Menu" },
 			{ href: "/orders", label: "Orders" },];
