@@ -293,7 +293,7 @@ function Main() {
 											<p className="text-muted-foreground">
 												{item.description}
 											</p>
-											<p className="font-medium">${item.price.toFixed(2)}</p>
+											<p className="font-medium">₹{item.price.toFixed(2)}</p>
 										</div>
 										<div className="flex items-center gap-2">
 											<Button
@@ -447,9 +447,9 @@ function CheckoutDialog({
 								<TableRow key={item.id}>
 									<TableCell>{item.name}</TableCell>
 									<TableCell>{item.quantity}</TableCell>
-									<TableCell>${item.price.toFixed(2)}</TableCell>
+									<TableCell>₹{item.price.toFixed(2)}</TableCell>
 									<TableCell>
-										${(item.price * item.quantity).toFixed(2)}
+									₹{(item.price * item.quantity).toFixed(2)}
 									</TableCell>
 								</TableRow>
 							))}
@@ -458,7 +458,7 @@ function CheckoutDialog({
 					<Separator />
 					<div className="flex items-center justify-between">
 						<span className="font-medium">Total:</span>
-						<span className="font-medium">${calculateTotal().toFixed(2)}</span>
+						<span className="font-medium">₹{calculateTotal().toFixed(2)}</span>
 					</div>
 				</div>
 				<DialogFooter>

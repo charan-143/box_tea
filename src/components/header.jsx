@@ -50,14 +50,17 @@ export function Header({ setActiveTab, setIsProfileOpen, onLogout }) {
 	const navLinks = userRole === 'admin' 
 		? [
 			{ href: "/admin-dashboard", label: "Admin Dashboard" },
+				{ href: "/menu", label: "Menu" },
+				{ href: "/orders", label: "Orders" },
+		]
+		: userRole === 'worker' 
+		? [
+			{ href: "/worker-dashboard", label: "Worker Dashboard" },
 			{ href: "/menu", label: "Menu" },
 			{ href: "/orders", label: "Orders" },
 		]
-		: [
-			{ href: "/worker-dashboard", label: "Dashboard" },
-			{ href: "/menu", label: "Menu" },
-			{ href: "/orders", label: "Orders" },
-		];
+		: [{ href: "/menu", label: "Menu" },
+			{ href: "/orders", label: "Orders" },];
 
 	return (
 		<header className="sticky top-0 z-10 border-b bg-background px-4 py-3 shadow-sm sm:px-6">
