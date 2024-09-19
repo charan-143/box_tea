@@ -23,15 +23,6 @@ import { Calendar } from "@/components/ui/calendar";
 import { supabase } from "@/lib/supabase";
 import { Header } from "@/components/header";
 
-// Tables:
-// - MenuItems: Stores information about each menu item.
-// - Orders: Stores information about placed orders.
-// - OrderItems:  Stores information about individual items in an order.
-
-// Initial Menu Data (replace with data from database)
-
-// Initial Order Data (replace with data from database)
-
 // Function to fetch Menu Items from Supabase
 async function fetchMenuItems() {
 	const { data, error } = await supabase.from("menuitems").select("*");
@@ -54,18 +45,6 @@ async function fetchOrders() {
 	}
 }
 
-// // Function to add a new Menu Item to Supabase
-// async function addMenuItem(name, description, price, image) {
-// 	const { data, error } = await supabase
-// 		.from("MenuItems")
-// 		.insert({ name, description, price, image });
-
-// 	if (error) {
-// 		console.error("Error adding menu item:", error);
-// 	} else {
-// 		return data;
-// 	}
-// }
 
 function Main() {
 	const [orderDate, setOrderDate] = useState(null);
@@ -92,12 +71,7 @@ function Main() {
 			if (!user) return;
 
 			const userType = await user_type(user.email);
-			//TODO : check if user is admin or worker or customer
-			// const isAdmin = userType === "admin";
-
-			// if (isAdmin) {
-			// 	console.log("admin...........");
-			// }
+		
 
 			const filtered = fetchedOrders.filter(
 				(order) =>
@@ -109,6 +83,7 @@ function Main() {
 		};
 
 		filterOrders();
+		
 	}, [fetchedOrders, orderDate]);
 	const user_type = async (user_email) => {
 		const { data, error } = await supabase
@@ -142,6 +117,8 @@ function Main() {
 			return null;
 		}
 	};
+	
+	
 	return (
 		<main className="flex-1">
 			<section className="py-12 sm:py-16 lg:py-5">

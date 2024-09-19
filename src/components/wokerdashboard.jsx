@@ -71,11 +71,18 @@ export function WorkerDashboard() {
 		});
 	}, [orders, startDate, endDate, searchTerm]);
 
+	// const sortedOrders = useMemo(() => {
+	// 	return [...filteredOrders].sort((a, b) => {
+	// 		const dateA = new Date(a.date);
+	// 		const dateB = new Date(b.date);
+	// 		return sortOrder === "desc" ? dateA - dateB : dateB - dateA;
+	// 	});
+	// }, [filteredOrders, sortOrder]);
 	const sortedOrders = useMemo(() => {
 		return [...filteredOrders].sort((a, b) => {
-			const dateA = new Date(a.date);
-			const dateB = new Date(b.date);
-			return sortOrder === "desc" ? dateA - dateB : dateB - dateA;
+			const dateTimeA = new Date(`${a.date} ${a.time}`);
+			const dateTimeB = new Date(`${b.date} ${b.time}`);
+			return sortOrder === "desc" ? dateTimeA - dateTimeB : dateTimeB - dateTimeA;
 		});
 	}, [filteredOrders, sortOrder]);
 
@@ -154,6 +161,7 @@ export function WorkerDashboard() {
 						<TableHead>Venue</TableHead>
 						<TableHead>Items</TableHead>
 						<TableHead>Quantity</TableHead>
+						<TableHead>Given Time</TableHead>
 						{activeTab === "pending" && (
 							<>
 								<TableHead>Given Time</TableHead>
@@ -188,6 +196,8 @@ export function WorkerDashboard() {
 										</div>
 									))}
 								</TableCell>
+								<TableCell>{order.given_time}</TableCell>
+
 								{activeTab === "pending" && (
 									<>
 										<TableCell>{order.given_time || "-"}</TableCell>
@@ -223,7 +233,7 @@ export function WorkerDashboard() {
 										onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
 									>
 										Sort by Date {sortOrder === "asc" ? "↓" : "↑"}
-										
+
 									</Button>
 									<Input
 										type="text"

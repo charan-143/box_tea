@@ -29,7 +29,7 @@ export default function Component() {
 		if (user_email()) {
 			router.push("/menu");
 		}
-	}, []);
+	}, [router]); // Include 'router' in the dependency array
 
 	return (
 		<div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-background to-secondary">

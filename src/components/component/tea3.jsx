@@ -114,109 +114,6 @@ async function createOrder(purpose, venue, customer, cart) {
 
 	return data.id;
 }
-// function Header({ setActiveTab, setIsProfileOpen }) {
-// 	const [signIn, setSignIn] = useState(false);
-
-// 	return (
-// 		<header className="sticky top-0 z-10 border-b bg-background px-4 py-3 shadow-sm sm:px-6">
-// 			<div className="container mx-auto flex items-center justify-between">
-// 				<Link href="#" className="flex items-center gap-2" prefetch={false}>
-// 					<CupSodaIcon className="h-6 w-6" />
-// 					<span className="text-lg font-medium">Box Tea</span>
-// 				</Link>
-// 				<div className="flex items-center gap-4 sm:hidden">
-// 					<Sheet>
-// 						<SheetTrigger asChild>
-// 							<Button variant="ghost" size="icon">
-// 								<MenuIcon className="h-5 w-5" />
-// 								<span className="sr-only">Toggle menu</span>
-// 							</Button>
-// 						</SheetTrigger>
-// 						<SheetContent side="left" className="sm:max-w-xs">
-// 							<nav className="grid gap-4 text-lg font-medium">
-// 								<Link
-// 									href="/menu"
-// 									className={`${setActiveTab === "menu" ? "text-primary" : ""}`}
-// 								>
-// 									Menu
-// 								</Link>
-// 								<Link
-// 									href="/orders"
-// 									className={`${
-// 										setActiveTab === "orders" ? "text-primary" : ""
-// 									}`}
-// 								>
-// 									Orders
-// 								</Link>
-// 							</nav>
-// 						</SheetContent>
-// 					</Sheet>
-// 				</div>
-// 				<div className="hidden sm:flex items-center gap-4">
-// 					<Link
-// 						href="/menu"
-// 						className={`${setActiveTab === "menu" ? "text-primary" : ""}`}
-// 					>
-// 						Menu
-// 					</Link>
-// 					<Link
-// 						href="/orders"
-// 						className={`${setActiveTab === "orders" ? "text-primary" : ""}`}
-// 					>
-// 						Orders
-// 					</Link>
-
-// 					<DropdownMenu>
-// 						<DropdownMenuTrigger asChild>
-// 							<Button variant="ghost" size="icon">
-// 								<UserIcon className="h-5 w-5" />
-// 								<span className="sr-only">Account</span>
-// 							</Button>
-// 						</DropdownMenuTrigger>
-// 						<DropdownMenuContent align="end">
-// 							<Link href={"/profile"} prefetch={false}>
-// 								<DropdownMenuItem>
-// 									<button onClick={() => setIsProfileOpen(true)}>
-// 										<span>Profile</span>
-// 									</button>
-// 								</DropdownMenuItem>
-// 							</Link>
-// 							<DropdownMenuItem>
-// 								<Link
-// 									href="#"
-// 									className="flex items-center gap-2"
-// 									prefetch={false}
-// 								>
-// 									<LogInIcon className="h-4 w-4" />
-// 									<span onClick={() => setSignIn(true)}>Sign out</span>
-// 								</Link>
-// 							</DropdownMenuItem>
-// 						</DropdownMenuContent>
-// 					</DropdownMenu>
-// 				</div>
-// 			</div>
-// 			{/* <Dialog open={signIn} onOpenChange={setSignIn}>
-// 				<DialogContent>
-// 					<DialogHeader>
-// 						<DialogTitle>Sign In</DialogTitle>
-// 						<DialogDescription>
-// 							Enter your email and password to access your account.
-// 						</DialogDescription>
-// 					</DialogHeader>
-// 					<div className="space-y-2">
-// 						<Label htmlFor="email">Email</Label>
-// 						<Input id="email" type="email" placeholder="name@example.com" />
-// 					</div>
-// 					<div className="space-y-2">
-// 						<Label htmlFor="password">Password</Label>
-// 						<Input id="password" type="password" />
-// 					</div>
-// 					<Button className="w-full">Sign In</Button>
-// 				</DialogContent>
-// 			</Dialog> */}
-// 		</header>
-// 	);
-// }
 
 function Main() {
 	const [cart, setCart] = useState([]);
@@ -228,6 +125,7 @@ function Main() {
 	useEffect(() => {
 		const fetchData = async () => {
 			const fetchedMenuItems = await fetchMenuItems();
+			
 			setMenuItems(fetchedMenuItems);
 
 			const fetchedOrders = await fetchOrders();
@@ -266,46 +164,37 @@ function Main() {
 		return cart.reduce((total, item) => total + item.price * item.quantity, 0);
 	};
 
+	
 	return (
 		<main className="flex-1">
 			<section className="py-12 sm:py-16 lg:py-5">
 				<div className="container mx-auto px-4 sm:px-6">
 					<div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3 justify-center">
-						{menuItems.map((item) => {
+						{menuItems.sort((a, b) => a.id - b.id).map((item) => {
 							const cartItem = cart.find((i) => i.id === item.id);
 							const quantity = cartItem ? cartItem.quantity : 0;
 							return (
-								<Card
-									key={item.id}
-									className="bg-card text-card-foreground shadow-sm hover:shadow-md transition-shadow"
-								>
-									<div className="flex flex-col items-center gap-4 p-6">
+								<li key={item.id} className="flex justify-between items-center py-4 px-6 bg-white shadow-lg rounded-xl">
+									<div className="flex items-center space-x-4">
 										<img
 											src={item.image}
 											alt={item.name}
-											width={150}
-											height={150}
-											className="rounded-md"
-											style={{ aspectRatio: "150/150", objectFit: "cover" }}
+											width={60}
+											height={60}
+											className="rounded-lg"
 										/>
-										<div className="text-center">
-											<h3 className="font-medium">{item.name}</h3>
-											<p className="text-muted-foreground">
-												{item.description}
-											</p>
-											<p className="font-medium">₹{item.price.toFixed(2)}</p>
+										<div className="flex flex-col">
+											<span className="font-semibold text-lg text-gray-900 whitespace-normal">{item.name}</span>
+											<span className="text-sm text-gray-600 mt-2">₹{item.price.toFixed(2)}</span>
 										</div>
-										<div className="flex items-center gap-2">
+									</div>
+									<div className="flex items-center space-x-4">
+										<div className="flex items-center space-x-2">
 											<Button
 												variant="outline"
 												size="sm"
-												onClick={() => {
-													if (quantity > 0) {
-														updateCartQuantity(item, quantity - 1);
-													} else {
-														removeFromCart(item);
-													}
-												}}
+												onClick={() => removeFromCart(item)}
+												className="text-gray-700 hover:text-gray-900"
 											>
 												-
 											</Button>
@@ -319,19 +208,19 @@ function Main() {
 														parseInt(e.target.value) || 0
 													)
 												}
-												className="w-16 text-center"
+												className="w-20 text-center text-gray-900"
 											/>
 											<Button
 												variant="outline"
 												size="sm"
 												onClick={() => addToCart(item)}
+												className="text-gray-700 hover:text-gray-900"
 											>
 												+
 											</Button>
-											{/* {cart.length} */}
 										</div>
 									</div>
-								</Card>
+								</li>
 							);
 						})}
 					</div>
