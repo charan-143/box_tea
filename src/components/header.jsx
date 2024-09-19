@@ -8,23 +8,14 @@ import {
 	DropdownMenuContent,
 	DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import {
-	Dialog,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-	DialogDescription,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
+
 import { Sheet, SheetTrigger, SheetContent } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 
 import { supabase } from "@/lib/supabase";
 import { CupSodaIcon, MenuIcon, UserIcon, LogOutIcon } from "lucide-react";
 
 export function Header({ setActiveTab, setIsProfileOpen, onLogout }) {
-	const [signIn, setSignIn] = useState(false);
 	const [userRole, setUserRole] = useState(null);
 	const router = useRouter();
 

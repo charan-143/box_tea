@@ -1,19 +1,10 @@
 "use client";
-import { Label } from "@/components/ui/label";
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Sheet, SheetTrigger, SheetContent } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 
-import {
-	Card,
-	CardHeader,
-	CardTitle,
-	CardDescription,
-	CardContent,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import {
 	Table,
 	TableHeader,
@@ -28,16 +19,8 @@ import {
 	PopoverContent,
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import {
-	Dialog,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-	DialogDescription,
-} from "@/components/ui/dialog";
 
 import { supabase } from "@/lib/supabase";
-import { useRouter } from "next/navigation";
 import { Header } from "@/components/header";
 
 // Tables:
