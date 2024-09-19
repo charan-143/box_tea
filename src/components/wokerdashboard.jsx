@@ -223,6 +223,7 @@ export function WorkerDashboard() {
 										onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
 									>
 										Sort by Date {sortOrder === "asc" ? "↓" : "↑"}
+										
 									</Button>
 									<Input
 										type="text"
