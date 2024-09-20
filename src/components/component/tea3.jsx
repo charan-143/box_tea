@@ -227,8 +227,8 @@ function Main() {
 				</div>
 			</section>
 
-			<div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-10">
-				<Button variant="outline" onClick={() => setIsCheckoutDialogOpen(true)}>
+			<div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-10 w-full max-w-sm px-4">
+				<Button variant="outline" onClick={() => setIsCheckoutDialogOpen(true)} className="w-full">
 					Checkout ({cart.length})
 				</Button>
 			</div>
@@ -277,7 +277,7 @@ function CheckoutDialog({
 
 	return (
 		<Dialog open={isCheckoutDialogOpen} onOpenChange={setIsCheckoutDialogOpen}>
-			<DialogContent className="sm:max-w-lg">
+			<DialogContent className="sm:max-w-lg w-full max-h-[90vh] overflow-y-auto">
 				<DialogHeader>
 					<DialogTitle>Checkout</DialogTitle>
 					<DialogDescription>
@@ -290,7 +290,7 @@ function CheckoutDialog({
 						<Input
 							id="name"
 							placeholder="Item name"
-							className="col-span-3"
+							className="col-span-3 h-12"
 							value={purpose}
 							onChange={(e) => setPurpose(e.target.value)}
 						/>
@@ -302,7 +302,7 @@ function CheckoutDialog({
 						<Input
 							id="username"
 							placeholder="Give description of the item"
-							className="col-span-3"
+							className="col-span-3 h-12"
 							value={venue}
 							onChange={(e) => setVenue(e.target.value)}
 						/>
@@ -314,7 +314,7 @@ function CheckoutDialog({
 						<Input
 							id="customer"
 							placeholder="Customer Name"
-							className="col-span-3"
+							className="col-span-3 h-12"
 							value={customer}
 							onChange={(e) => setCustomer(e.target.value)}
 						/>
@@ -354,7 +354,7 @@ function CheckoutDialog({
 					<Button
 						variant="outline"
 						onClick={() => setIsCheckoutDialogOpen(false)}
-						className="w-full"
+						className="w-full h-12"
 					>
 						Cancel
 					</Button>
@@ -373,7 +373,7 @@ function CheckoutDialog({
 										// For example, you could set an error state and show it in the UI
 									});
 							}}
-							className="w-full"
+							className="w-full h-12"
 						>
 							Place Order
 						</Button>
