@@ -30,7 +30,6 @@ import {
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { DialogClose } from "@radix-ui/react-dialog";
-import { supabase } from "@/lib/supabase";
 import {  useRouter } from "next/navigation";
 
 import { supabase } from "@/lib/supabase";
