@@ -4,7 +4,7 @@ import { Label } from "@/components/ui/label";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-
+import Image from "next/image";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
@@ -176,7 +176,7 @@ function Main() {
 							return (
 								<li key={item.id} className="flex justify-between items-center py-4 px-6 bg-white shadow-lg rounded-xl">
 									<div className="flex items-center space-x-4">
-										<img
+										<Image
 											src={item.image}
 											alt={item.name}
 											width={60}
