@@ -1,9 +1,10 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { Mountain, CupSodaIcon } from "lucide-react";
+import { CupSodaIcon } from "lucide-react";
 import Link from "next/link";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
 export default function Component() {
 	const router = useRouter();
 	const user_email = async () => {
@@ -28,7 +29,7 @@ export default function Component() {
 		if (user_email()) {
 			router.push("/menu");
 		}
-	}, []);
+	}, [router]); // Include 'router' in the dependency array
 
 	return (
 		<div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-background to-secondary">

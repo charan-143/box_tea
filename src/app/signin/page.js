@@ -29,7 +29,19 @@ export default function SignIn() {
 				password,
 			});
 			if (error) throw error;
-			router.push("/menu");
+			const { data: { user } } = await supabase.auth.getUser();
+			if (user) {
+				const { data, error } = await supabase
+					.from('users_data')
+					.select('user_type')
+					.eq('users_email', user.email)
+					.single();
+				if (data.user_type === 'worker') {
+					router.push("/worker-dashboard");
+				} else {
+					router.push("/menu");
+				}
+			}
 		} catch (error) {
 			setError(error.message);
 		}
