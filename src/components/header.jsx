@@ -11,7 +11,7 @@ import {
 
 import { Sheet, SheetTrigger, SheetContent } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-
+import Image from "next/image";
 import { supabase } from "@/lib/supabase";
 import { CupSodaIcon, MenuIcon, UserIcon, LogOutIcon } from "lucide-react";
 
@@ -65,8 +65,7 @@ export function Header({ setActiveTab, setIsProfileOpen, onLogout }) {
 		<header className="sticky top-0 z-10 border-b bg-background px-4 py-3 shadow-sm sm:px-6">
 			<div className="container mx-auto flex items-center justify-between">
 				<Link href="#" className="flex items-center gap-2" prefetch={false}>
-					<CupSodaIcon className="h-6 w-6" />
-					<span className="text-lg font-medium">Box Tea</span>
+					<Image src="/mail_logo.png" alt="Mail Logo" width={24} height={24} />
 				</Link>
 				<div className="flex items-center gap-4 sm:hidden">
 					<Sheet>
