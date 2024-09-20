@@ -350,10 +350,11 @@ function CheckoutDialog({
 						<span className="font-medium">₹{calculateTotal().toFixed(2)}</span>
 					</div>
 				</div>
-				<DialogFooter>
+				<DialogFooter className="flex flex-col space-y-5">
 					<Button
 						variant="outline"
 						onClick={() => setIsCheckoutDialogOpen(false)}
+						className="w-full"
 					>
 						Cancel
 					</Button>
@@ -372,6 +373,7 @@ function CheckoutDialog({
 										// For example, you could set an error state and show it in the UI
 									});
 							}}
+							className="w-full"
 						>
 							Place Order
 						</Button>
