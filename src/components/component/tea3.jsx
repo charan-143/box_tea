@@ -28,6 +28,7 @@ import { Separator } from "@/components/ui/separator";
 import { DialogClose } from "@radix-ui/react-dialog";
 import { supabase } from "@/lib/supabase";
 import { Header } from "@/components/header";
+import Image from "next/image";
 async function fetchMenuItems() {
 	const { data, error } = await supabase.from("menuitems").select("*");
 
@@ -180,7 +181,7 @@ function Main() {
 										className="flex justify-between items-center py-4 px-6 bg-white shadow-lg rounded-xl"
 									>
 										<div className="flex items-center space-x-4">
-											<img
+											<Image
 												src={item.image}
 												alt={item.name}
 												width={60}
