@@ -380,7 +380,7 @@ function CheckoutDialog({
 				>
 					Cancel
 				</Button>
-				<Button onClick={handlePlaceOrder} disabled={cart.length === 0}>
+				<Button onClick={() => handlePlaceOrder()} disabled={cart.length === 0}>
 					Place Order
 				</Button>
 			</DialogFooter>
