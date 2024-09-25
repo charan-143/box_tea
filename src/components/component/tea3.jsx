@@ -1,5 +1,6 @@
 "use client";
 import { Label } from "@/components/ui/label";
+import { toast } from "@/components/ui/use-toast"; // Assuming you are using Toast
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
@@ -426,15 +427,20 @@ function CheckoutDialog({
 					<DialogClose asChild>
 						<Button
 							className="w-full py-3 text-lg"
-							onClick={() => {
+							onClick={(event) => {
+								event.stopPropagation(); // Prevent immediate dialog close
 								createOrder(purpose, venue, customer, cart)
 									.then((orderId) => {
 										setCart([]);
-										setIsCheckoutDialogOpen(false);
+										setIsCheckoutDialogOpen(false); // Close after success
 										setPlaceOrder(true);
+										toast({
+											title: "Order Placed!",
+											description: "Your order has been placed successfully.",
+										});
 									})
 									.catch((error) => {
-										// ... (Error handling in createOrder function will handle this)
+										// Handle errors (e.g., display error message)
 									});
 							}}
 							disabled={isLoading}
