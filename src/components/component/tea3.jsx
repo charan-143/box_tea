@@ -28,6 +28,7 @@ import { Separator } from "@/components/ui/separator";
 import { DialogClose } from "@radix-ui/react-dialog";
 import { supabase } from "@/lib/supabase";
 import { Header } from "@/components/header";
+
 async function fetchMenuItems() {
 	const { data, error } = await supabase.from("menuitems").select("*");
 
@@ -49,20 +50,6 @@ async function fetchOrders() {
 	}
 }
 
-// Function to add a new Menu Item to Supabase
-// async function addMenuItem(name, description, price, image) {
-// 	const { data, error } = await supabase
-// 		.from("MenuItems")
-// 		.insert({ name, description, price, image });
-
-// 	if (error) {
-// 		console.error("Error adding menu item:", error);
-// 	} else {
-// 		return data;
-// 	}
-// }
-
-// Function to create a new Order in Supabase
 async function createOrder(purpose, venue, customer, cart) {
 	const items = cart.map((item) => ({ id: item.name }));
 	const quantities = cart.map((item) => ({ quantity: item.quantity }));
@@ -122,6 +109,9 @@ function Main() {
 	const [menuItems, setMenuItems] = useState([]);
 	const [fetchedOrders, setFetchedOrders] = useState([]);
 
+	const [isLoading, setIsLoading] = useState(false);
+	const [orderError, setOrderError] = useState(null);
+
 	useEffect(() => {
 		const fetchData = async () => {
 			const fetchedMenuItems = await fetchMenuItems();
@@ -163,6 +153,68 @@ function Main() {
 	const calculateTotal = () => {
 		return cart.reduce((total, item) => total + item.price * item.quantity, 0);
 	};
+	// Function to create a new Order in Supabase
+	async function createOrder(purpose, venue, customer, cart) {
+		setOrderError(null);
+		setIsLoading(true);
+
+		try {
+			const items = cart.map((item) => ({ id: item.name }));
+			const quantities = cart.map((item) => ({ quantity: item.quantity }));
+
+			const getUserEmail = async () => {
+				const {
+					data: { user },
+					error,
+				} = await supabase.auth.getUser();
+				if (error) {
+					console.error("Error fetching user:", error);
+					return null;
+				}
+				return user?.email;
+			};
+
+			const user = await getUserEmail();
+			const today = new Date();
+			const date = today.toLocaleDateString().slice(0, 10);
+			// const date = today.toISOString().slice(0, 10);
+			const time = today.toTimeString().slice(0, 8);
+			console.log(date, time);
+
+			const { data, error } = await supabase
+				.from("orders")
+				.insert({
+					date,
+					time,
+					purpose,
+					venue,
+					customer,
+					status: "Pending",
+					items,
+					quantities,
+					user,
+				})
+				.select()
+				.single();
+
+			if (error) {
+				console.error("Error creating order:", error);
+				throw error;
+			}
+
+			if (!data) {
+				console.error("No data returned from order creation");
+				throw new Error("Failed to create order");
+			}
+
+			return data.id;
+		} catch (error) {
+			console.error("Error creating order:", error);
+			setOrderError("Failed to place order. Please try again.");
+		} finally {
+			setIsLoading(false);
+		}
+	}
 
 	return (
 		<main className="flex-1">
@@ -236,8 +288,12 @@ function Main() {
 			</section>
 
 			<div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-10">
-				<Button variant="outline" onClick={() => setIsCheckoutDialogOpen(true)}>
-					Checkout ({cart.length})
+				<Button
+					variant="outline"
+					onClick={() => setIsCheckoutDialogOpen(true)}
+					disabled={isLoading}
+				>
+					{isLoading ? "Processing..." : `Checkout (${cart.length})`}
 				</Button>
 			</div>
 
@@ -248,6 +304,7 @@ function Main() {
 				setCart={setCart}
 				calculateTotal={calculateTotal}
 				setPlaceOrder={setPlaceOrder}
+				isLoading={isLoading}
 			/>
 			<PlaceOrderDialog placeOrder={placeOrder} setPlaceOrder={setPlaceOrder} />
 		</main>
@@ -278,6 +335,7 @@ function CheckoutDialog({
 	calculateTotal,
 	setPlaceOrder,
 	setCart,
+	isLoading,
 }) {
 	const [purpose, setPurpose] = useState("");
 	const [venue, setVenue] = useState("");
@@ -361,6 +419,7 @@ function CheckoutDialog({
 					<Button
 						variant="outline"
 						onClick={() => setIsCheckoutDialogOpen(false)}
+						disabled={isLoading}
 					>
 						Cancel
 					</Button>
@@ -375,13 +434,12 @@ function CheckoutDialog({
 										setPlaceOrder(true);
 									})
 									.catch((error) => {
-										console.error("Error placing order:", error);
-										// Display an error message to the user
-										// For example, you could set an error state and show it in the UI
+										// ... (Error handling in createOrder function will handle this)
 									});
 							}}
+							disabled={isLoading}
 						>
-							Place Order
+							{isLoading ? "Placing Order..." : "Place Order"}
 						</Button>
 					</DialogClose>
 				</DialogFooter>
