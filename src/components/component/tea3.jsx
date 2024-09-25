@@ -291,44 +291,43 @@ function CheckoutDialog({
 					<DialogDescription>
 						Review your order and complete the checkout process.
 					</DialogDescription>
-					<div className="grid grid-cols-4 items-center gap-4">
-						<Label htmlFor="name" className="">
+					<div className="grid grid-cols-1 gap-4 sm:grid-cols-4 items-center">
+						<Label htmlFor="name" className="sm:col-span-1">
 							Purpose
 						</Label>
 						<Input
 							id="name"
 							placeholder="Item name"
-							className="col-span-3"
+							className="sm:col-span-3"
 							value={purpose}
 							onChange={(e) => setPurpose(e.target.value)}
 						/>
 					</div>
-					<div className="grid grid-cols-4 items-center gap-4">
-						<Label htmlFor="username" className="">
+					<div className="grid grid-cols-1 gap-4 sm:grid-cols-4 items-center">
+						<Label htmlFor="username" className="sm:col-span-1">
 							Venue
 						</Label>
 						<Input
 							id="username"
 							placeholder="Give description of the item"
-							className="col-span-3"
+							className="sm:col-span-3"
 							value={venue}
 							onChange={(e) => setVenue(e.target.value)}
 						/>
 					</div>
-					<div className="grid grid-cols-4 items-center gap-4">
-						<Label htmlFor="customer" className="">
+					<div className="grid grid-cols-1 gap-4 sm:grid-cols-4 items-center">
+						<Label htmlFor="customer" className="sm:col-span-1">
 							Customer
 						</Label>
 						<Input
 							id="customer"
 							placeholder="Customer Name"
-							className="col-span-3"
+							className="sm:col-span-3"
 							value={customer}
 							onChange={(e) => setCustomer(e.target.value)}
 						/>
 					</div>
 				</DialogHeader>
-
 				<div className="grid gap-4">
 					<Table>
 						<TableHeader>
@@ -367,6 +366,7 @@ function CheckoutDialog({
 					</Button>
 					<DialogClose asChild>
 						<Button
+							className="w-full py-3 text-lg"
 							onClick={() => {
 								createOrder(purpose, venue, customer, cart)
 									.then((orderId) => {
