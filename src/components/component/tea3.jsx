@@ -329,14 +329,26 @@ function CheckoutDialog({
 	 * On error, logs the error to the console.
 	 */
 	const handlePlaceOrder = () => {
+		setIsLoading(true); // Add a loading state
 		createOrder(purpose, venue, customer, cart)
 			.then((orderId) => {
 				setCart([]);
 				setIsCheckoutDialogOpen(false);
 				setPlaceOrder(true);
+				// Add a success message for mobile users
+				if (isMobileDevice()) {
+					showMobileNotification("Order placed successfully!");
+				}
 			})
 			.catch((error) => {
 				console.error("Error placing order:", error);
+				// Show error message to mobile users
+				if (isMobileDevice()) {
+					showMobileNotification("Failed to place order. Please try again.");
+				}
+			})
+			.finally(() => {
+				setIsLoading(false);
 			});
 	};
 
