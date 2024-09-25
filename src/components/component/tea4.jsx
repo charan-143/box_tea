@@ -4,7 +4,13 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
+import {
+	Card,
+	CardHeader,
+	CardTitle,
+	CardContent,
+	CardDescription,
+} from "@/components/ui/card";
 import {
 	Table,
 	TableHeader,
@@ -45,7 +51,6 @@ async function fetchOrders() {
 	}
 }
 
-
 function Main() {
 	const [orderDate, setOrderDate] = useState(null);
 	const [menuItems, setMenuItems] = useState([]);
@@ -71,7 +76,6 @@ function Main() {
 			if (!user) return;
 
 			const userType = await user_type(user.email);
-		
 
 			const filtered = fetchedOrders.filter(
 				(order) =>
@@ -83,7 +87,6 @@ function Main() {
 		};
 
 		filterOrders();
-		
 	}, [fetchedOrders, orderDate]);
 	const user_type = async (user_email) => {
 		const { data, error } = await supabase
@@ -117,8 +120,7 @@ function Main() {
 			return null;
 		}
 	};
-	
-	
+
 	return (
 		<main className="flex-1">
 			<section className="py-12 sm:py-16 lg:py-5">

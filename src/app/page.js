@@ -1,12 +1,18 @@
 "use client";
-import { Button } from "@/components/ui/button";
-import { CupSodaIcon } from "lucide-react";
-import Link from "next/link";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+/**
+ * Component renders a welcome screen for the Box Tea application.
+ * It checks if the user is logged in and redirects to the menu page if they are.
+ */
 export default function Component() {
 	const router = useRouter();
+
+	/**
+	 * user_email fetches the current user's email from Supabase.
+	 * @returns {Promise<Object|null>} The user object if successful, otherwise null.
+	 */
 	const user_email = async () => {
 		try {
 			const {
@@ -25,6 +31,7 @@ export default function Component() {
 			return null;
 		}
 	};
+
 	useEffect(() => {
 		if (user_email()) {
 			router.push("/menu");

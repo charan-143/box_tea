@@ -125,7 +125,7 @@ function Main() {
 	useEffect(() => {
 		const fetchData = async () => {
 			const fetchedMenuItems = await fetchMenuItems();
-			
+
 			setMenuItems(fetchedMenuItems);
 
 			const fetchedOrders = await fetchOrders();
@@ -164,65 +164,73 @@ function Main() {
 		return cart.reduce((total, item) => total + item.price * item.quantity, 0);
 	};
 
-	
 	return (
 		<main className="flex-1">
 			<section className="py-12 sm:py-16 lg:py-5">
 				<div className="container mx-auto px-4 sm:px-6">
 					<div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3 justify-center">
-						{menuItems.sort((a, b) => a.id - b.id).map((item) => {
-							const cartItem = cart.find((i) => i.id === item.id);
-							const quantity = cartItem ? cartItem.quantity : 0;
-							return (
-								<li key={item.id} className="flex justify-between items-center py-4 px-6 bg-white shadow-lg rounded-xl">
-									<div className="flex items-center space-x-4">
-										<img
-											src={item.image}
-											alt={item.name}
-											width={60}
-											height={60}
-											className="rounded-lg"
-										/>
-										<div className="flex flex-col">
-											<span className="font-semibold text-lg text-gray-900 whitespace-normal">{item.name}</span>
-											<span className="text-sm text-gray-600 mt-2">₹{item.price.toFixed(2)}</span>
-										</div>
-									</div>
-									<div className="flex items-center space-x-4">
-										<div className="flex items-center space-x-2">
-											<Button
-												variant="outline"
-												size="sm"
-												onClick={() => removeFromCart(item)}
-												className="text-gray-700 hover:text-gray-900"
-											>
-												-
-											</Button>
-											<Input
-												type="number"
-												min="0"
-												value={quantity.toString()}
-												onChange={(e) =>
-													updateCartQuantity(
-														item,
-														parseInt(e.target.value) || 0
-													)
-												}
-												className="w-20 text-center text-gray-900"
+						{menuItems
+							.sort((a, b) => a.id - b.id)
+							.map((item) => {
+								const cartItem = cart.find((i) => i.id === item.id);
+								const quantity = cartItem ? cartItem.quantity : 0;
+								return (
+									<li
+										key={item.id}
+										className="flex justify-between items-center py-4 px-6 bg-white shadow-lg rounded-xl"
+									>
+										<div className="flex items-center space-x-4">
+											<img
+												src={item.image}
+												alt={item.name}
+												width={60}
+												height={60}
+												className="rounded-lg"
 											/>
-											<Button
-												variant="outline"
-												size="sm"
-												onClick={() => addToCart(item)}
-												className="text-gray-700 hover:text-gray-900"
-											>
-												+
-											</Button>
+											<div className="flex flex-col">
+												<span className="font-semibold text-lg text-gray-900 whitespace-normal">
+													{item.name}
+												</span>
+												<span className="text-sm text-gray-600 mt-2">
+													₹{item.price.toFixed(2)}
+												</span>
+											</div>
 										</div>
-									</div>
-								</li>
-							);
-						})}
+										<div className="flex items-center space-x-4">
+											<div className="flex items-center space-x-2">
+												<Button
+													variant="outline"
+													size="sm"
+													onClick={() => removeFromCart(item)}
+													className="text-gray-700 hover:text-gray-900"
+												>
+													-
+												</Button>
+												<Input
+													type="number"
+													min="0"
+													value={quantity.toString()}
+													onChange={(e) =>
+														updateCartQuantity(
+															item,
+															parseInt(e.target.value) || 0
+														)
+													}
+													className="w-20 text-center text-gray-900"
+												/>
+												<Button
+													variant="outline"
+													size="sm"
+													onClick={() => addToCart(item)}
+													className="text-gray-700 hover:text-gray-900"
+												>
+													+
+												</Button>
+											</div>
+										</div>
+									</li>
+								);
+							})}
 					</div>
 				</div>
 			</section>
@@ -275,113 +283,113 @@ function CheckoutDialog({
 	const [venue, setVenue] = useState("");
 	const [customer, setCustomer] = useState("");
 
+	const renderInputField = (label, id, placeholder, value, onChange) => (
+		<div className="grid grid-cols-4 items-center gap-4">
+			<Label htmlFor={id} className="">
+				{label}
+			</Label>
+			<Input
+				id={id}
+				placeholder={placeholder}
+				className="col-span-3"
+				value={value}
+				onChange={(e) => onChange(e.target.value)}
+			/>
+		</div>
+	);
+
+	const renderCartItems = () => (
+		<Table>
+			<TableHeader>
+				<TableRow>
+					<TableHead>Item</TableHead>
+					<TableHead>Quantity</TableHead>
+					<TableHead>Price</TableHead>
+					<TableHead>Total</TableHead>
+				</TableRow>
+			</TableHeader>
+			<TableBody>
+				{cart.map((item) => (
+					<TableRow key={item.id}>
+						<TableCell>{item.name}</TableCell>
+						<TableCell>{item.quantity}</TableCell>
+						<TableCell>₹{item.price.toFixed(2)}</TableCell>
+						<TableCell>₹{(item.price * item.quantity).toFixed(2)}</TableCell>
+					</TableRow>
+				))}
+			</TableBody>
+		</Table>
+	);
+
+	/**
+	 * Handles the process of placing an order.
+	 * Creates an order with the provided purpose, venue, customer, and cart details.
+	 * On success, clears the cart, closes the checkout dialog, and sets the place order flag.
+	 * On error, logs the error to the console.
+	 */
+	const handlePlaceOrder = () => {
+		createOrder(purpose, venue, customer, cart)
+			.then((orderId) => {
+				setCart([]);
+				setIsCheckoutDialogOpen(false);
+				setPlaceOrder(true);
+			})
+			.catch((error) => {
+				console.error("Error placing order:", error);
+			});
+	};
+
+	const dialogContent = (
+		<>
+			<DialogHeader>
+				<DialogTitle>Checkout</DialogTitle>
+				<DialogDescription>
+					Review your order and complete the checkout process.
+				</DialogDescription>
+			</DialogHeader>
+
+			{renderInputField("Purpose", "name", "Item name", purpose, setPurpose)}
+			{renderInputField(
+				"Venue",
+				"username",
+				"Give description of the item",
+				venue,
+				setVenue
+			)}
+			{renderInputField(
+				"Customer",
+				"customer",
+				"Customer Name",
+				customer,
+				setCustomer
+			)}
+
+			<div className="grid gap-4">
+				{renderCartItems()}
+				<Separator />
+				<div className="flex items-center justify-between">
+					<span className="font-medium">Total:</span>
+					<span className="font-medium">₹{calculateTotal().toFixed(2)}</span>
+				</div>
+			</div>
+			<DialogFooter>
+				<Button
+					variant="outline"
+					onClick={() => setIsCheckoutDialogOpen(false)}
+				>
+					Cancel
+				</Button>
+				<Button onClick={handlePlaceOrder}>Place Order</Button>
+			</DialogFooter>
+		</>
+	);
+
 	return (
 		<Dialog open={isCheckoutDialogOpen} onOpenChange={setIsCheckoutDialogOpen}>
-			<DialogContent className="sm:max-w-lg">
-				<DialogHeader>
-					<DialogTitle>Checkout</DialogTitle>
-					<DialogDescription>
-						Review your order and complete the checkout process.
-					</DialogDescription>
-					<div className="grid grid-cols-4 items-center gap-4">
-						<Label htmlFor="name" className="">
-							Purpose
-						</Label>
-						<Input
-							id="name"
-							placeholder="Item name"
-							className="col-span-3"
-							value={purpose}
-							onChange={(e) => setPurpose(e.target.value)}
-						/>
-					</div>
-					<div className="grid grid-cols-4 items-center gap-4">
-						<Label htmlFor="username" className="">
-							Venue
-						</Label>
-						<Input
-							id="username"
-							placeholder="Give description of the item"
-							className="col-span-3"
-							value={venue}
-							onChange={(e) => setVenue(e.target.value)}
-						/>
-					</div>
-					<div className="grid grid-cols-4 items-center gap-4">
-						<Label htmlFor="customer" className="">
-							Customer
-						</Label>
-						<Input
-							id="customer"
-							placeholder="Customer Name"
-							className="col-span-3"
-							value={customer}
-							onChange={(e) => setCustomer(e.target.value)}
-						/>
-					</div>
-				</DialogHeader>
-
-				<div className="grid gap-4">
-					<Table>
-						<TableHeader>
-							<TableRow>
-								<TableHead>Item</TableHead>
-								<TableHead>Quantity</TableHead>
-								<TableHead>Price</TableHead>
-								<TableHead>Total</TableHead>
-							</TableRow>
-						</TableHeader>
-						<TableBody>
-							{cart.map((item) => (
-								<TableRow key={item.id}>
-									<TableCell>{item.name}</TableCell>
-									<TableCell>{item.quantity}</TableCell>
-									<TableCell>₹{item.price.toFixed(2)}</TableCell>
-									<TableCell>
-									₹{(item.price * item.quantity).toFixed(2)}
-									</TableCell>
-								</TableRow>
-							))}
-						</TableBody>
-					</Table>
-					<Separator />
-					<div className="flex items-center justify-between">
-						<span className="font-medium">Total:</span>
-						<span className="font-medium">₹{calculateTotal().toFixed(2)}</span>
-					</div>
-				</div>
-				<DialogFooter>
-					<Button
-						variant="outline"
-						onClick={() => setIsCheckoutDialogOpen(false)}
-					>
-						Cancel
-					</Button>
-					<DialogClose asChild>
-						<Button
-							onClick={() => {
-								createOrder(purpose, venue, customer, cart)
-									.then((orderId) => {
-										setCart([]);
-										setIsCheckoutDialogOpen(false);
-										setPlaceOrder(true);
-									})
-									.catch((error) => {
-										console.error("Error placing order:", error);
-										// Display an error message to the user
-										// For example, you could set an error state and show it in the UI
-									});
-							}}
-						>
-							Place Order
-						</Button>
-					</DialogClose>
-				</DialogFooter>
-			</DialogContent>
+			<DialogContent className="sm:max-w-lg">{dialogContent}</DialogContent>
 		</Dialog>
 	);
 }
-
 function PlaceOrderDialog({ placeOrder, setPlaceOrder }) {
 	return (
 		<Dialog open={placeOrder} onOpenChange={setPlaceOrder}>
