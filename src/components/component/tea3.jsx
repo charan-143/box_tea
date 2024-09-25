@@ -1,11 +1,9 @@
 "use client";
 import { Label } from "@/components/ui/label";
-import { toast } from "@/components/ui/use-toast"; // Assuming you are using Toast
-
-import { useState, useEffect } from "react";
+import { toast } from "@/components/ui/use-toast";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
@@ -16,7 +14,6 @@ import {
 	TableBody,
 	TableCell,
 } from "@/components/ui/table";
-
 import {
 	Dialog,
 	DialogContent,
@@ -30,28 +27,25 @@ import { DialogClose } from "@radix-ui/react-dialog";
 import { supabase } from "@/lib/supabase";
 import { Header } from "@/components/header";
 
-async function fetchMenuItems() {
+const fetchMenuItems = async () => {
 	const { data, error } = await supabase.from("menuitems").select("*");
-
 	if (error) {
 		console.error("Error fetching menu items:", error);
-	} else {
-		return data;
+		return [];
 	}
-}
+	return data;
+};
 
-// Function to fetch Orders from Supabase
-async function fetchOrders() {
+const fetchOrders = async () => {
 	const { data, error } = await supabase.from("orders").select("*");
-
 	if (error) {
 		console.error("Error fetching orders:", error);
-	} else {
-		return data;
+		return [];
 	}
-}
+	return data;
+};
 
-async function createOrder(purpose, venue, customer, cart) {
+const createOrder = async (purpose, venue, customer, cart) => {
 	const items = cart.map((item) => ({ id: item.name }));
 	const quantities = cart.map((item) => ({ quantity: item.quantity }));
 
@@ -70,9 +64,7 @@ async function createOrder(purpose, venue, customer, cart) {
 	const user = await getUserEmail();
 	const today = new Date();
 	const date = today.toLocaleDateString().slice(0, 10);
-	// const date = today.toISOString().slice(0, 10);
 	const time = today.toTimeString().slice(0, 8);
-	console.log(date, time);
 
 	const { data, error } = await supabase
 		.from("orders")
@@ -101,7 +93,7 @@ async function createOrder(purpose, venue, customer, cart) {
 	}
 
 	return data.id;
-}
+};
 
 function Main() {
 	const [cart, setCart] = useState([]);
@@ -109,23 +101,22 @@ function Main() {
 	const [placeOrder, setPlaceOrder] = useState(false);
 	const [menuItems, setMenuItems] = useState([]);
 	const [fetchedOrders, setFetchedOrders] = useState([]);
-
 	const [isLoading, setIsLoading] = useState(false);
 	const [orderError, setOrderError] = useState(null);
 
 	useEffect(() => {
 		const fetchData = async () => {
-			const fetchedMenuItems = await fetchMenuItems();
-
+			const [fetchedMenuItems, fetchedOrders] = await Promise.all([
+				fetchMenuItems(),
+				fetchOrders(),
+			]);
 			setMenuItems(fetchedMenuItems);
-
-			const fetchedOrders = await fetchOrders();
 			setFetchedOrders(fetchedOrders);
 		};
-
 		fetchData();
 	}, []);
-	const addToCart = (item) => {
+
+	const addToCart = useCallback((item) => {
 		setCart((prevCart) => {
 			const existingItemIndex = prevCart.findIndex((i) => i.id === item.id);
 			if (existingItemIndex !== -1) {
@@ -136,86 +127,50 @@ function Main() {
 				return [...prevCart, { ...item, quantity: 1 }];
 			}
 		});
-	};
-	const removeFromCart = (item) => {
+	}, []);
+
+	const removeFromCart = useCallback((item) => {
 		setCart((prevCart) => prevCart.filter((i) => i.id !== item.id));
-	};
-	const updateCartQuantity = (item, quantity) => {
-		if (quantity === 0) {
-			removeFromCart(item);
-		} else {
-			setCart((prevCart) =>
-				prevCart.map((i) =>
-					i.id === item.id ? { ...i, quantity: quantity } : i
-				)
-			);
-		}
-	};
-	const calculateTotal = () => {
+	}, []);
+
+	const updateCartQuantity = useCallback(
+		(item, quantity) => {
+			if (quantity === 0) {
+				removeFromCart(item);
+			} else {
+				setCart((prevCart) =>
+					prevCart.map((i) =>
+						i.id === item.id ? { ...i, quantity: quantity } : i
+					)
+				);
+			}
+		},
+		[removeFromCart]
+	);
+
+	const calculateTotal = useCallback(() => {
 		return cart.reduce((total, item) => total + item.price * item.quantity, 0);
-	};
-	// Function to create a new Order in Supabase
-	async function createOrder(purpose, venue, customer, cart) {
+	}, [cart]);
+
+	const handleCreateOrder = async (purpose, venue, customer) => {
 		setOrderError(null);
 		setIsLoading(true);
-
 		try {
-			const items = cart.map((item) => ({ id: item.name }));
-			const quantities = cart.map((item) => ({ quantity: item.quantity }));
-
-			const getUserEmail = async () => {
-				const {
-					data: { user },
-					error,
-				} = await supabase.auth.getUser();
-				if (error) {
-					console.error("Error fetching user:", error);
-					return null;
-				}
-				return user?.email;
-			};
-
-			const user = await getUserEmail();
-			const today = new Date();
-			const date = today.toLocaleDateString().slice(0, 10);
-			// const date = today.toISOString().slice(0, 10);
-			const time = today.toTimeString().slice(0, 8);
-			console.log(date, time);
-
-			const { data, error } = await supabase
-				.from("orders")
-				.insert({
-					date,
-					time,
-					purpose,
-					venue,
-					customer,
-					status: "Pending",
-					items,
-					quantities,
-					user,
-				})
-				.select()
-				.single();
-
-			if (error) {
-				console.error("Error creating order:", error);
-				throw error;
-			}
-
-			if (!data) {
-				console.error("No data returned from order creation");
-				throw new Error("Failed to create order");
-			}
-
-			return data.id;
+			const orderId = await createOrder(purpose, venue, customer, cart);
+			setCart([]);
+			setIsCheckoutDialogOpen(false);
+			setPlaceOrder(true);
+			toast({
+				title: "Order Placed!",
+				description: "Your order has been placed successfully.",
+			});
 		} catch (error) {
 			console.error("Error creating order:", error);
 			setOrderError("Failed to place order. Please try again.");
 		} finally {
 			setIsLoading(false);
 		}
-	}
+	};
 
 	return (
 		<main className="flex-1">
@@ -306,11 +261,13 @@ function Main() {
 				calculateTotal={calculateTotal}
 				setPlaceOrder={setPlaceOrder}
 				isLoading={isLoading}
+				handleCreateOrder={handleCreateOrder}
 			/>
 			<PlaceOrderDialog placeOrder={placeOrder} setPlaceOrder={setPlaceOrder} />
 		</main>
 	);
 }
+
 function Footer() {
 	return (
 		<footer className="bg-muted py-6 text-muted-foreground">
@@ -337,6 +294,7 @@ function CheckoutDialog({
 	setPlaceOrder,
 	setCart,
 	isLoading,
+	handleCreateOrder,
 }) {
 	const [purpose, setPurpose] = useState("");
 	const [venue, setVenue] = useState("");
@@ -428,20 +386,8 @@ function CheckoutDialog({
 						<Button
 							className="w-full py-3 text-lg"
 							onClick={(event) => {
-								event.stopPropagation(); // Prevent immediate dialog close
-								createOrder(purpose, venue, customer, cart)
-									.then((orderId) => {
-										setCart([]);
-										setIsCheckoutDialogOpen(false); // Close after success
-										setPlaceOrder(true);
-										toast({
-											title: "Order Placed!",
-											description: "Your order has been placed successfully.",
-										});
-									})
-									.catch((error) => {
-										// Handle errors (e.g., display error message)
-									});
+								event.stopPropagation();
+								handleCreateOrder(purpose, venue, customer);
 							}}
 							disabled={isLoading}
 						>
@@ -477,13 +423,12 @@ function PlaceOrderDialog({ placeOrder, setPlaceOrder }) {
 		</Dialog>
 	);
 }
+
 export function Tea3() {
 	const [activeTab, setActiveTab] = useState("menu");
 	const [isProfileOpen, setIsProfileOpen] = useState(false);
 	const handleLogout = () => {
-		// Handle logout logic here, such as clearing local storage, resetting state, etc.
 		console.log("User logged out");
-		// You can add additional logic here, like redirecting to a login page
 	};
 	return (
 		<div className="flex flex-col min-h-screen bg-background text-foreground">
