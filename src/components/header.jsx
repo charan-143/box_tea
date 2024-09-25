@@ -24,12 +24,14 @@ export function Header({ setActiveTab, setIsProfileOpen, onLogout }) {
 	}, []);
 
 	const fetchUserRole = async () => {
-		const { data: { user } } = await supabase.auth.getUser();
+		const {
+			data: { user },
+		} = await supabase.auth.getUser();
 		if (user) {
 			const { data, error } = await supabase
-				.from('users_data')
-				.select('user_type')
-				.eq('users_email', user.email)
+				.from("users_data")
+				.select("user_type")
+				.eq("users_email", user.email)
 				.single();
 
 			if (data) {
@@ -41,25 +43,25 @@ export function Header({ setActiveTab, setIsProfileOpen, onLogout }) {
 	const handleLogout = async () => {
 		const { error } = await supabase.auth.signOut();
 		if (error) {
-		  console.error("Error logging out:", error);
+			console.error("Error logging out:", error);
 		} else {
-		  router.push("/signin");
+			router.push("/signin");
 		}
-	  };
+	};
 
-	const navLinks = userRole === 'admin' 
-		? [
-			{ href: "/admin-dashboard", label: "Admin Dashboard" },
-				{ href: "/menu", label: "Menu" },
-				{ href: "/orders", label: "Orders" },
-		]
-		: userRole === 'worker' 
-		? [
-			{ href: "/worker-dashboard", label: "Worker Dashboard" },
-			,
-		]
-		: [{ href: "/menu", label: "Menu" },
-			{ href: "/orders", label: "Orders" },];
+	const navLinks =
+		userRole === "admin"
+			? [
+					{ href: "/admin-dashboard", label: "Admin Dashboard" },
+					{ href: "/menu", label: "Menu" },
+					{ href: "/orders", label: "Orders" },
+			  ]
+			: userRole === "worker"
+			? [{ href: "/worker-dashboard", label: "Worker Dashboard" }, ,]
+			: [
+					{ href: "/menu", label: "Menu" },
+					{ href: "/orders", label: "Orders" },
+			  ];
 
 	return (
 		<header className="sticky top-0 z-10 border-b bg-background px-4 py-3 shadow-sm sm:px-6">
@@ -95,13 +97,13 @@ export function Header({ setActiveTab, setIsProfileOpen, onLogout }) {
 								))}
 							</nav>
 							<Button
-    variant="ghost"
-    className="w-full justify-start"
-    onClick={handleLogout}
-  >
-    <LogOutIcon className="mr-2 h-4 w-4" />
-    SignOut
-  </Button>
+								variant="ghost"
+								className="w-full justify-start"
+								onClick={handleLogout}
+							>
+								<LogOutIcon className="mr-2 h-4 w-4" />
+								SignOut
+							</Button>
 						</SheetContent>
 					</Sheet>
 				</div>
@@ -126,8 +128,7 @@ export function Header({ setActiveTab, setIsProfileOpen, onLogout }) {
 						</DropdownMenuTrigger>
 						<DropdownMenuContent align="end">
 							<DropdownMenuItem onClick={() => setIsProfileOpen(true)}>
-								<Link href={"/profile"}>
-								Profile</Link>
+								<Link href={"/profile"}>Profile</Link>
 							</DropdownMenuItem>
 							<DropdownMenuItem onClick={handleLogout}>
 								<LogOutIcon className="h-4 w-4 mr-2" />
@@ -137,7 +138,6 @@ export function Header({ setActiveTab, setIsProfileOpen, onLogout }) {
 					</DropdownMenu>
 				</div>
 			</div>
-			
 		</header>
 	);
 }
