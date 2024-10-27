@@ -26,6 +26,7 @@ import { Separator } from "@/components/ui/separator";
 import { DialogClose } from "@radix-ui/react-dialog";
 import { supabase } from "@/lib/supabase";
 import { Header } from "@/components/header";
+import QuantityInput from "@/components/QuantityInput"; // Add this import
 
 const fetchMenuItems = async () => {
 	const { data, error } = await supabase.from("menuitems").select("*");
@@ -205,36 +206,12 @@ function Main() {
 											</div>
 										</div>
 										<div className="flex items-center space-x-4">
-											<div className="flex items-center space-x-2">
-												<Button
-													variant="outline"
-													size="sm"
-													onClick={() => removeFromCart(item)}
-													className="text-gray-700 hover:text-gray-900"
-												>
-													-
-												</Button>
-												<Input
-													type="number"
-													min="0"
-													value={quantity.toString()}
-													onChange={(e) =>
-														updateCartQuantity(
-															item,
-															parseInt(e.target.value) || 0
-														)
-													}
-													className="w-20 text-center text-gray-900"
-												/>
-												<Button
-													variant="outline"
-													size="sm"
-													onClick={() => addToCart(item)}
-													className="text-gray-700 hover:text-gray-900"
-												>
-													+
-												</Button>
-											</div>
+											<QuantityInput
+												quantity={quantity}
+												minQuantity={0}
+												maxQuantity={100}
+												onChange={(newQuantity) => updateCartQuantity(item, newQuantity)}
+											/>
 										</div>
 									</li>
 								);
@@ -302,7 +279,7 @@ function CheckoutDialog({
 
 	return (
 		<Dialog open={isCheckoutDialogOpen} onOpenChange={setIsCheckoutDialogOpen}>
-			<DialogContent className="sm:max-w-lg">
+			<DialogContent className="sm:max-w-lg w-full max-h-[90vh] overflow-y-auto">
 				<DialogHeader>
 					<DialogTitle>Checkout</DialogTitle>
 					<DialogDescription>

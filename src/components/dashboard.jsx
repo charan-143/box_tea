@@ -115,15 +115,28 @@ export function Dashboard() {
 	const [topSellingItem, setTopSellingItem] = useState("N/A");
 	const [frequentCustomer, setFrequentCustomer] = useState("N/A");
 	const [activeTab, setActiveTab] = useState("pending");
+	const [users_data,setUsersData] = useState([]);
 
 	const fetchOrders = useCallback(async () => {
 		const { data, error } = await supabase.from("orders").select("*");
 		if (error) {
 			console.error("Error fetching orders:", error);
-		} else {
-			setOrders(data);
+			return [];
 		}
+		return data;
 	}, []);
+
+	const fetchusers_data = useCallback(async () => {
+		const { data, error } = await supabase.from("users_data").select("*");
+		if (error) {
+			console.error("Error fetching users data:", error);
+			return [];
+		}
+		return data;
+	}, []);
+
+	
+
 
 	const calculateData = useCallback(() => {
 		const monthlySales = {};
@@ -345,13 +358,27 @@ export function Dashboard() {
 	}, [orders]);
 
 	useEffect(() => {
-		fetchOrders();
-		setOrdersToday(calculateOrdersToday());
-		setOrdersThisMonth(calculateOrdersThisMonth());
-		setTopSellingItem(topItem);
-		setFrequentCustomer(mostFrequentCustomer);
+		const loadData = async () => {
+			try {
+				const fetchedOrders = await fetchOrders();
+				const fetchedUsers = await fetchusers_data();
+				setOrders(fetchedOrders || []);
+				setUsersData(fetchedUsers || []);
+				
+				// Calculate and set other state values
+				setOrdersToday(calculateOrdersToday());
+				setOrdersThisMonth(calculateOrdersThisMonth());
+				setTopSellingItem(topItem);
+				setFrequentCustomer(mostFrequentCustomer);
+			} catch (error) {
+				console.error("Error loading data:", error);
+			}
+		};
+
+		loadData();
 	}, [
 		fetchOrders,
+		fetchusers_data,
 		calculateOrdersToday,
 		calculateOrdersThisMonth,
 		calculateData,
@@ -366,6 +393,7 @@ export function Dashboard() {
 						<TableRow>
 							<TableHead>Date</TableHead>
 							<TableHead>Time</TableHead>
+							<TableHead>Department</TableHead>
 							<TableHead>Purpose</TableHead>
 							<TableHead>Venue</TableHead>
 							<TableHead>Items</TableHead>
@@ -395,6 +423,7 @@ export function Dashboard() {
 										<span className="md:hidden font-bold mr-2">Time:</span>
 										{order.time}
 									</TableCell>
+									<TableCell>{order.department}</TableCell>
 									<TableCell>{order.purpose}</TableCell>
 									<TableCell>{order.venue}</TableCell>
 									<TableCell>
@@ -425,6 +454,8 @@ export function Dashboard() {
 												</span>
 												<input
 													type="checkbox"
+													id={`order-checkbox-${order.id}`}
+													name={`order-checkbox-${order.id}`}
 													onChange={() => handleCheckboxChange(order.id)}
 													checked={!!order.given_time}
 													disabled={!!order.given_time}
@@ -440,12 +471,20 @@ export function Dashboard() {
 		);
 	};
 	const pendingOrders = useMemo(() => {
-		return sortedOrders.filter((order) => !order.given_time);
-	}, [sortedOrders]);
+		if (!Array.isArray(users_data)) return [];
+		return sortedOrders.filter((order) => !order.given_time).map(order => ({
+			...order,
+			department: users_data.find(user => user.users_email === order.user)?.department_name || 'N/A'
+		}));
+	}, [sortedOrders, users_data]);
 
 	const deliveredOrders = useMemo(() => {
-		return sortedOrders.filter((order) => order.given_time);
-	}, [sortedOrders]);
+		if (!Array.isArray(users_data)) return [];
+		return sortedOrders.filter((order) => order.given_time).map(order => ({
+			...order,
+			department: users_data.find(user => user.users_email === order.user)?.department_name || 'N/A'
+		}));
+	}, [sortedOrders, users_data]);
 	const pendingOrdersCount = useMemo(
 		() => pendingOrders.length,
 		[pendingOrders]
@@ -697,153 +736,7 @@ export function Dashboard() {
 						</ChartContainer>
 					</CardContent>
 				</Card>
-				{/* <Card className="col-span-2">
-					<CardHeader>
-						<CardTitle>Total Orders</CardTitle>
-						<div className="flex justify-between items-center mb-4">
-							<p className="text-4xl font-bold">{filteredOrders.length}</p>
-							<div className="flex items-center space-x-2">
-								<Button
-									onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
-								>
-									Sort by Date {sortOrder === "asc" ? "↑" : "↓"}
-								</Button>
-								<Input
-									type="text"
-									placeholder="Search orders..."
-									value={searchTerm}
-									onChange={handleSearch} />
-								<DropdownMenu>
-									<DropdownMenuTrigger asChild>
-										<Button variant="outline">
-											{timeRange === "today"
-												? "Today"
-												: timeRange === "this-month"
-													? "This Month"
-													: timeRange === "custom"
-														? "Custom Date"
-														: "All Orders"}
-											<ChevronDownIcon className="ml-2 h-4 w-4" />
-										</Button>
-									</DropdownMenuTrigger>
-									<DropdownMenuContent>
-										<DropdownMenuItem
-											onClick={() => handleTimeRangeChange("today")}
-										>
-											Today
-										</DropdownMenuItem>
-										<DropdownMenuItem
-											onClick={() => handleTimeRangeChange("this-month")}
-										>
-											This Month
-										</DropdownMenuItem>
-										<DropdownMenuItem
-											onClick={() => handleTimeRangeChange("all")}
-										>
-											All Orders
-										</DropdownMenuItem>
-										<DropdownMenuItem
-											onClick={() => handleTimeRangeChange("custom")}
-										>
-											Custom Date
-										</DropdownMenuItem>
-									</DropdownMenuContent>
-								</DropdownMenu>
-							</div>
-						</div>
-						{timeRange === "custom" && (
-							<div className="flex justify-end space-x-2 mb-4">
-								{["start", "end"].map((type) => (
-									<Popover key={type}>
-										<PopoverTrigger asChild>
-											<Button variant="outline">
-												<CalendarIcon className="mr-2 h-4 w-4" />
-												{type === "start" ? (
-													startDate ? (
-														format(startDate, "PPP")
-													) : (
-														<span>Start Date</span>
-													)
-												) : endDate ? (
-													format(endDate, "PPP")
-												) : (
-													<span>End Date</span>
-												)}
-											</Button>
-										</PopoverTrigger>
-										<PopoverContent className="w-auto p-0">
-											<Calendar
-												mode="single"
-												selected={type === "start" ? startDate : endDate}
-												onSelect={(date) => handleDateChange(type, date)}
-												initialFocus />
-										</PopoverContent>
-									</Popover>
-								))}
-							</div>
-						)}
-					</CardHeader>
-					<CardContent>
-						<Table>
-							<TableHeader>
-								<TableRow>
-									<TableHead>Date</TableHead>
-									<TableHead>Time</TableHead>
-									<TableHead>Purpose</TableHead>
-									<TableHead>Venue</TableHead>
-									<TableHead>Total Quantity</TableHead>
-									<TableHead>Given Time</TableHead>
-									<TableHead>Action</TableHead>
-								</TableRow>
-							</TableHeader>
-							<TableBody>
-								{filteredOrders
-									.slice(
-										(currentPage - 1) * ordersPerPage,
-										currentPage * ordersPerPage
-									)
-									.map((order) => (
-										<TableRow key={order.id}>
-											<TableCell>
-												{new Date(order.date).toLocaleDateString()}
-											</TableCell>
-											<TableCell>{order.time}</TableCell>
-											<TableCell>{order.purpose}</TableCell>
-											<TableCell>{order.venue}</TableCell>
-											<TableCell>
-												{order.quantities.reduce(
-													(sum, q) => sum + q.quantity,
-													0
-												)}
-											</TableCell>
-											<TableCell>{order.givenTime || "-"}</TableCell>
-											<TableCell>
-												<input
-													type="checkbox"
-													onChange={() => handleCheckboxChange(order.id)}
-													checked={!!order.givenTime}
-													disabled={order.checkboxDisabled} />
-											</TableCell>
-										</TableRow>
-									))}
-							</TableBody>
-						</Table>
-						<div className="mt-4 flex justify-center">
-							{Array.from(
-								{ length: Math.ceil(filteredOrders.length / ordersPerPage) },
-								(_, i) => (
-									<Button
-										key={i}
-										onClick={() => setCurrentPage(i + 1)}
-										className={`mx-1 border-2 border-black text-black font-bold ${currentPage === i + 1 ? "bg-gray-500" : "bg-gray-300"}`}
-									>
-										{i + 1}
-									</Button>
-								)
-							)}
-						</div>
-					</CardContent>
-				</Card> */}
+			
 				<Card  className="col-span-2">
 						<CardHeader>
 							<CardTitle>Order Summary</CardTitle>
@@ -873,9 +766,11 @@ export function Dashboard() {
 									</Button>
 									<Input
 										type="text"
-										placeholder="Search orders..."
+										id="order-search"
+										name="order-search"
 										value={searchTerm}
 										onChange={handleSearch}
+										placeholder="Search orders..."
 										className="w-full md:w-auto"
 									/>
 									<DropdownMenu>
